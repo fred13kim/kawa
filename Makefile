@@ -2,14 +2,17 @@ CC = gcc
 LEX = flex
 
 
-lexertester: lexer.c lexertester.o
-	$(CC) -o lexertester lexer.c lexertester.o
+lexertester: lexer.o lexertester.o
+	$(CC) -o lexertester lexer.o lexertester.o
+
+lexertester.o: lexertester.c tokens-manual.h
+	$(CC) -c lexertester.c
 
 lexer.c: lexer.l
 	$(LEX) --header-file=lexer.h lexer.l
 
-lexertester.o: lexertester.c tokens-manual.h
-	$(CC) -c lexertester.c
+lexer.o: lexer.c tokens-manual.h
+	$(CC) -c lexer.c
 
 test: lexertester
 	$(CC) -E ./ltests/*.c | ./lexertester
