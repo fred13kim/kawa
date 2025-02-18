@@ -180,7 +180,7 @@ L?\"                    { buf_ptr = buf; BEGIN(string_sc); }
                 *buf_ptr++ = '\'';
             }
     \n      {
-                fprintf(stderr, "%s:%d:Error: missing terminating \" character\n",file_info.filename,file_info.lineno);
+                fprintf(stderr, "%s:%d:Error: newline in string constant\n",file_info.filename,file_info.lineno);
                 exit(-1);
             }
 }
