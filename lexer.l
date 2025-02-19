@@ -3,9 +3,13 @@
 %option     yylineno
 %{
 #include    <string.h>
-#include    "tokens-manual.h"
+#include    "parser.h"
 
 #define MAX_STR_CONST   65535
+
+char buf[MAX_STR_CONST];
+char *buf_ptr;
+
 %}
 
     /* RULES */
@@ -46,8 +50,6 @@ oct_esc_s           \\{octal_digit}{1,3}
 
 
 %%
-            char buf[MAX_STR_CONST];
-            char *buf_ptr;
 
 
             /* Let's get the file information */
@@ -180,7 +182,7 @@ L?\"                    { buf_ptr = buf; BEGIN(string_sc); }
                 *buf_ptr++ = '\'';
             }
     \n      {
-                fprintf(stderr, "%s:%d:Error: newline in string constant\n",file_info.filename,file_info.lineno);
+                fprintf(stderr, "%s:%d:Error: missing terminating \" character\n",file_info.filename,file_info.lineno);
                 exit(-1);
             }
 }
@@ -227,7 +229,6 @@ L?\"                    { buf_ptr = buf; BEGIN(string_sc); }
 
 
 
-<<EOF>>     { return TOKEOF; }
 
     /* PUNCTUATORS */
 "["         { return '[';        }
@@ -276,14 +277,10 @@ L?\"                    { buf_ptr = buf; BEGIN(string_sc); }
 "^="        { return XOREQ;      }
 "|="        { return OREQ;       }
 ","         { return ',';        }
-"#"         { return '#';        }
-"##"        { return HASHHASH;   }
 "<:"        { return '[';        }
 ":>"        { return ']';        }
 "<%"        { return '{';        }
 "%>"        { return '}';        }
-"%:"        { return '#';        }
-"%:%"       { return HASHHASH;   }
 
         /* KEYWORDS */
 auto        { return AUTO;       }

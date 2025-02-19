@@ -1,24 +1,35 @@
-CC = gcc
-LEX = flex
+CC 		= gcc
+LEX 	= flex
+YACC 	= bison
 
+all: parsertester lexertester
 
-lexertester: lexer.o lexertester.o
-	$(CC) -o lexertester lexer.o lexertester.o
+parsertester: parser.o lexer.o parsertester.o
+	$(CC) -o parsertester parser.o lexer.o parsertester.o
 
-lexertester.o: lexertester.c tokens-manual.h
+parsertester.o: parsertester.c
+	$(CC) -c parsertester.c
+
+lexertester: lexer.o lexertester.o parser.h
+	$(CC) -o lexertester lexer.o parser.o lexertester.o
+
+lexertester.o: lexertester.c
 	$(CC) -c lexertester.c
 
-lexer.c: lexer.l
+lexer.c: lexer.l parser.h
 	$(LEX) --header-file=lexer.h lexer.l
 
-lexer.o: lexer.c tokens-manual.h
+lexer.o: lexer.c
 	$(CC) -c lexer.c
 
-test: lexertester
-	$(CC) -E ./ltests/*.c | ./lexertester
+parser.h parser.c: parser.y
+	$(YACC) -v --defines=parser.h -o parser.c parser.y
 
-debug: lexertester
-	$(CC) -g -o lexertester lexer.c lexertester.c
+parser.o: parser.c manual.h
+	$(CC) -c parser.c
+
+test: lexertester
+	$(CC) -E ./tests/ltests/*.c | ./lexertester
 
 clean:
-	rm -f lexertester *.o lexer.c lexer.h
+	rm -f lexertester *.o lexer.c lexer.h parser.c parser.h parser.output parsertester

@@ -1,4 +1,4 @@
-#include "tokens-manual.h"
+#include "parser.h"
 #include "lexer.h"
 #include <stdio.h>
 
@@ -35,7 +35,6 @@ char *get_punc(int punc)
         case ANDEQ:      return "ANDEQ";
         case OREQ:       return "OREQ";
         case XOREQ:      return "XOREQ";
-        case HASHHASH:   return "HASHHASH";
     }
     return NULL;
 }
@@ -172,11 +171,11 @@ int main(void) {
                 fprintf(stdout, "IDENT\t%s\n", yylval.str.string_literal);
                 break;
             default:
-                if (t >= INDSEL && t <= HASHHASH)
+                if (t >= INDSEL && t <= _IMAGINARY)
                     fprintf(stdout, "%s\t\n", get_punc(t));
                 else
                     fprintf(stdout, "%s\t\n", get_kw(t));
-
+                break;
         }
     }
 }
