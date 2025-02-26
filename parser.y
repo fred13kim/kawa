@@ -11,6 +11,14 @@
     #include "parser_defs.h"
 }
 
+%union {
+    int      op;
+    number_t num;
+    string_t str;
+    char char_literal;
+    astnode_t *astnode_p;
+}
+
 %token IDENT CHARLIT STRING NUMBER INDSEL PLUSPLUS MINUSMINUS SHL SHR LTEQ GTEQ
     EQEQ NOTEQ LOGAND LOGOR ELLIPSIS TIMESEQ DIVEQ MODEQ PLUSEQ MINUSEQ SHLEQ
     SHREQ ANDEQ OREQ XOREQ AUTO BREAK CASE CHAR CONST CONTINUE DEFAULT DO DOUBLE
@@ -18,20 +26,15 @@
     SHORT SIGNED SIZEOF STATIC STRUCT SWITCH TYPEDEF UNION UNSIGNED VOID
     VOLATILE WHILE _BOOL _COMPLEX _IMAGINARY
 
-%union {
-    number_t num;
-    string_t str;
-    char char_literal;
-    struct astnode *astnode_p;
-}
 
 
-%type <astnode_p> binary_expr
-                ternary_expr
-                unary_expr
-                prefix_expr
-                postfix_expr
-                primary_expr
+
+%type <astnode_p>   expr
+                    assign_expr
+                    cond_expr
+
+%type <op>    assign_op
+
 
 /* C REF MANUAL Sec 7.2 */
 /* binary */
@@ -65,14 +68,35 @@
 %left '(' ')' '[' ']'
 
 
-
-
-
-
 %%
-expr:   NUMBER
-    |   expr '+' expr
+
+stmt:   expr ';'    { print_ast($1); }
+    |   stmt expr   { print_ast($2); }
     ;
+expr:   assign_expr { $$ = $1; }
+    |   expr ',' assign_expr    { alloc_astnode_binop(',',$1,$3); }
+    ;
+
+cond_expr:      {}
+
+unary_expr:     {}
+
+assign_expr:    cond_expr   { $$ = $1; }
+    |   unary_expr assign_op assign_expr    {  }
+    ;
+
+assign_op:  '='     { $$ = '=';     }
+         |  TIMESEQ { $$ = TIMESEQ; }
+         |  DIVEQ   { $$ = DIVEQ;   }
+         |  MODEQ   { $$ = MODEQ;   }
+         |  PLUSEQ  { $$ = PLUSEQ;  }
+         |  MINUSEQ { $$ = MINUSEQ; }
+         |  SHLEQ   { $$ = SHLEQ;   }
+         |  SHREQ   { $$ = SHREQ;   }
+         |  ANDEQ   { $$ = ANDEQ;   }
+         |  XOREQ   { $$ = XOREQ;   }
+         |  OREQ    { $$ = OREQ;    }
+
 
 %%
 
