@@ -3,7 +3,12 @@
 
 #include "parser_defs.h"
 
+
 typedef struct astnode_s astnode_t;
+
+astnode_t *alloc_astnode_binop(int op, astnode_t *left, astnode_t *right);
+
+void print_ast(astnode_t *node);
 
 enum nodetype{
     AST_CHARLIT,
