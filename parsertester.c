@@ -1,5 +1,5 @@
 #include "parser.h"
-#include "manual.h"
+#include "parser_defs.h"
 
 int main(void)
 {

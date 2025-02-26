@@ -1,5 +1,9 @@
-#ifndef MANUAL_H_
-#define MANUAL_H_
+/*
+ * Contains defines used in the lexer & parser
+ */
+
+#ifndef PARSER_DEFS_H_
+#define PARSER_DEFS_H_
 
 typedef struct file_info_s {
     char *filename;
@@ -39,4 +43,4 @@ typedef struct string_s {
 
 
 
-#endif // !MANUAL_H_
+#endif // !PARSER_DEFS_H_

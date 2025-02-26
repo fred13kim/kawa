@@ -7,7 +7,8 @@
 %}
 
 %code requires {
-    #include "manual.h"
+    #include "ast.h"
+    #include "parser_defs.h"
 }
 
 %token IDENT CHARLIT STRING NUMBER INDSEL PLUSPLUS MINUSMINUS SHL SHR LTEQ GTEQ
@@ -21,7 +22,9 @@
     number_t num;
     string_t str;
     char char_literal;
+    struct astnode *astnode_p;
 }
+
 
 %type <astnode_p> binary_expr
                 ternary_expr
