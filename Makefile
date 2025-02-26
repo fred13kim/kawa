@@ -4,14 +4,14 @@ YACC 	= bison
 
 all: parsertester lexertester
 
-parsertester: parser.o lexer.o parsertester.o ast.o
-	$(CC) -o parsertester parser.o lexer.o parsertester.o
+parsertester: ast.o parser.o lexer.o parsertester.o
+	$(CC) -o parsertester ast.o parser.o lexer.o parsertester.o
 
 parsertester.o: parsertester.c
 	$(CC) -c parsertester.c
 
 lexertester: lexer.o lexertester.o parser.h
-	$(CC) -o lexertester lexer.o parser.o lexertester.o
+	$(CC) -o lexertester lexer.o ast.o parser.o lexertester.o
 
 lexertester.o: lexertester.c
 	$(CC) -c lexertester.c
