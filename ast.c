@@ -8,8 +8,15 @@ astnode_t *alloc_astnode(enum nodetype t) {
     return node;
 }
 
-astnode_t *alloc_astnode_binop(int op, astnode_t *left, astnode_t *right) {
-    astnode_t *node = alloc_astnode(AST_BINOP);
+astnode_t *alloc_astnode_unary(int op, astnode_t *operand) {
+    astnode_t *node = alloc_astnode(AST_UNARY);
+    node->unary.op = op;
+    node->unary.operand = operand;
+    return node;
+}
+
+astnode_t *alloc_astnode_binary(int op, astnode_t *left, astnode_t *right) {
+    astnode_t *node = alloc_astnode(AST_BINARY);
     node->binary.op = op;
     node->binary.left = left;
     node->binary.right = right;
@@ -42,7 +49,7 @@ astnode_t *alloc_astnode_string(string_t string) {
 
 void print_ast(astnode_t *node) {
     switch(node->type) {
-        case AST_BINOP:
+        case AST_BINARY:
             break;
         case AST_IDENT:
             fprintf(stdout, "IDENT: %s\n", node->ident.str.string_literal);
@@ -51,7 +58,7 @@ void print_ast(astnode_t *node) {
             if (node->num.num.type >= NUM_INT )
                 fprintf(stdout, "CONSTANT: (type=int) %lld\n", node->num.num.integer);
             else
-                fprintf(stdout, "CONSTANT: (type=double) %Lf\n", node->num.num.real);
+                fprintf(stdout, "CONSTANT: (type=double) %Lg\n", node->num.num.real);
             break;
         case AST_CHARLIT:
             fprintf(stdout, "CHARLIT: %o\n", node->charlit.char_literal);
