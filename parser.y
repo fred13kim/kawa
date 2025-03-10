@@ -168,22 +168,22 @@ sizeof_expr : SIZEOF unary_expr {}
             //| SIZEOF '(' type_name ')' {}
             ;
 
-unary_minus_expr: '-' cast_expr {}
+unary_minus_expr: '-' cast_expr { $$ = alloc_astnode_unary('-', $2); }
                 ;
 
-unary_plus_expr : '+' cast_expr {}
+unary_plus_expr : '+' cast_expr { $$ = alloc_astnode_unary('+', $2); }
                 ;
 
-logical_negation_expr   : '!' cast_expr {}
+logical_negation_expr   : '!' cast_expr { $$ = alloc_astnode_unary('!', $2); }
                         ;
 
-bitwise_negation_expr   : '~' cast_expr {}
+bitwise_negation_expr   : '~' cast_expr { $$ = alloc_astnode_unary('~', $2); }
                         ;
 
-address_expr    : '&' cast_expr {}
+address_expr    : '&' cast_expr { $$ = alloc_astnode_unary('&', $2); }
                 ;
 
-indirection_expr    : '*' cast_expr {}
+indirection_expr    : '*' cast_expr { $$ = alloc_astnode_unary('*', $2); }
                     ;
 
 preincrement_expr   : PLUSPLUS unary_expr   {
