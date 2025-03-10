@@ -28,11 +28,14 @@ parser.h parser.c: parser.y
 parser.o: parser.c parser_defs.h
 	$(CC) -c parser.c
 
-ast.o: ast.h ast.c
+ast.o: ast.h parser.h ast.c
 	$(CC) -c ast.c
 
 test: lexertester
 	$(CC) -E ./tests/ltests/*.c | ./lexertester
+
+debug:
+	$(CC) -g -o parsertester ast.c parser.c lexer.c parsertester.c
 
 clean:
 	rm -f lexertester *.o lexer.c lexer.h parser.c parser.h parser.output parsertester

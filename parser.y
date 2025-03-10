@@ -117,9 +117,11 @@ statement: expr_statement
          | statement expr_statement 
          ;
 
-expr_statement: expr ';'        { print_ast($1); }
-              | /* opt */ ';'   
-              ;
+expr_statement  : expr ';'        { 
+                    print_ast($1);
+                }
+                | /* opt */ ';'   
+                ;
 
 expr: comma_expr    { $$ = $1; }
     ;
@@ -131,7 +133,13 @@ comma_expr: assignment_expr                 { $$ = $1; }
 
 primary_expr: IDENT         { $$ = alloc_astnode_ident($1); }
             | NUMBER        { $$ = alloc_astnode_number($1); }
-            | CHARLIT       { $$ = alloc_astnode_charlit($1); }
+            | CHARLIT       { 
+                number_t num  = {
+                    .integer = $1,
+                    .type = NUM_UINT,
+                };
+                $$ = alloc_astnode_number(num);
+            }
             | STRING        { $$ = alloc_astnode_string($1); }
             | '(' expr ')'  { $$ = $2; }
             ;
@@ -139,7 +147,7 @@ primary_expr: IDENT         { $$ = alloc_astnode_ident($1); }
 postfix_expr: primary_expr              { $$ = $1; }
             | subscript_expr            { $$ = $1; }
             | component_selection_expr  { $$ = $1; }
-            | function_call             {}
+            | function_call             { $$ = $1; }
             | postincrement_expr        { $$ = $1; }
             | postdecrement_expr        { $$ = $1; }
             //| compound_literal                          {}
@@ -166,14 +174,19 @@ indirect_component_selection: postfix_expr INDSEL IDENT {
                             }
                             ;
 
-function_call   : postfix_expr '(' expr_list ')'    {}
-                | postfix_expr '(' ')'              {}
+function_call   : postfix_expr '(' expr_list ')'    {
+                    $$ = alloc_astnode_fncall($1, $3);
+                }
+                | postfix_expr '(' ')'              {
+                    $$ = alloc_astnode_fncall($1,NULL);
+                }
                 ;
 
-expr_list   : assignment_expr               { $$ = $1; }
-            | expr_list ',' assignment_expr {
-                $$ = alloc_astnode_binary(',', $1, $3);
+expr_list   : assignment_expr               {
+                $$ = alloc_astnode_arg_node($1);
+                $$ = alloc_astnode_arg_list($$);
             }
+            | expr_list ',' assignment_expr { $$ = append_astnode($1, $3); }
             ;
 
 postincrement_expr  : postfix_expr PLUSPLUS {
@@ -207,7 +220,7 @@ unary_expr  : postfix_expr          { $$ = $1; }
             | predecrement_expr     { $$ = $1; }
             ;
 
-sizeof_expr : SIZEOF unary_expr {}
+sizeof_expr : SIZEOF unary_expr { $$ = alloc_astnode_sizeof($2); }
             //| SIZEOF '(' type_name ')' {}
             ;
 
@@ -301,7 +314,6 @@ equality_expr   : relational_expr                           { $$ = $1; }
 equality_op : EQEQ  { $$ = EQEQ;  }
             | NOTEQ { $$ = NOTEQ; }
             ;
-
 bitwise_or_expr : bitwise_xor_expr                      { $$ = $1; }
                 | bitwise_or_expr '|' bitwise_xor_expr  {
                     $$ = alloc_astnode_binary('|', $1, $3);
