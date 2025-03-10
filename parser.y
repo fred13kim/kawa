@@ -33,7 +33,13 @@
 
 
 %type <op>  unary_op
+            mult_op
+            add_op
+            shift_op
+            relational_op
+            equality_op
             assignment_op
+
 %type <astnode_p>   primary_expr
                     postfix_expr
                     argument_expr_list
@@ -44,13 +50,14 @@
                     shift_expr
                     relational_expr
                     equality_expr
-                    AND_expr
-                    exclusive_OR_expr
-                    inclusive_OR_expr
-                    logical_AND_expr
-                    logical_OR_expr
+                    bitwise_or_expr
+                    bitwise_xor_expr
+                    bitwise_and_expr
+                    logical_or_expr
+                    logical_and_expr
                     conditional_expr
                     assignment_expr
+                    comma_expr
                     expr
 //                    constant_expr
 
@@ -97,10 +104,13 @@ statement: expr_statement
 expr_statement: expr ';'        { print_ast($1); }
               | /* opt */ ';'   
               ;
-
-expr: assignment_expr           { $$ = $1; }
-    | expr ',' assignment_expr  { $$ = alloc_astnode_binary(',', $1, $3); }
+expr: comma_expr    { $$ = $1; }
     ;
+
+comma_expr: assignment_expr                 { $$ = $1; }
+          | comma_expr ',' assignment_expr  {
+              $$ = alloc_astnode_binary(',', $1, $3);
+          }
 
 primary_expr: IDENT         { $$ = alloc_astnode_ident($1); }
             | NUMBER        { $$ = alloc_astnode_number($1); }
@@ -144,81 +154,117 @@ unary_op: '&'   { $$ = '&'; }
         | '!'   { $$ = '!'; }
         ;
 
-cast_expr: unary_expr                   {}
-         //| '(' type_name ')' cast_expr  {}
-         ;
+cast_expr   : unary_expr                   { $$ = $1; }
+            //| '(' type_name ')' cast_expr  {}
+            ;
 
-multiplicative_expr: cast_expr                          {}
-                   | multiplicative_expr '*' cast_expr  {}
-                   | multiplicative_expr '/' cast_expr  {}
-                   | multiplicative_expr '%' cast_expr  {}
-                   ;
+multiplicative_expr : cast_expr                             { $$ = $1; }
+                    | multiplicative_expr mult_op cast_expr {
+                        $$ = alloc_astnode_binary($2, $1, $3);
+                    }
+                    ;
 
-additive_expr: multiplicative_expr                      {}
-             | additive_expr '+' multiplicative_expr    {}
-             | additive_expr '-' multiplicative_expr    {}
-             ;
-
-shift_expr: additive_expr                   {}
-          | shift_expr SHL additive_expr    {}
-          | shift_expr SHR additive_expr    {}
-          ;
-
-relational_expr: shift_expr                         {}
-               | relational_expr '<' shift_expr     {}
-               | relational_expr '>' shift_expr     {}
-               | relational_expr LTEQ shift_expr    {}
-               | relational_expr GTEQ shift_expr    {}
-               ;
-
-equality_expr: relational_expr                      {}
-             | equality_expr EQEQ relational_expr   {}
-             | equality_expr NOTEQ relational_expr  {}
-             ;
-
-
-AND_expr: equality_expr                 {}
-        | AND_expr '&' equality_expr    {}
+mult_op : '*'   { $$ = '*'; }
+        | '/'   { $$ = '/'; }
+        | '%'   { $$ = '%'; }
         ;
 
-exclusive_OR_expr: AND_expr                         {}
-                 | exclusive_OR_expr '^' AND_expr   {}
-                 ;
-
-inclusive_OR_expr: exclusive_OR_expr                        {}
-                 | inclusive_OR_expr '|' exclusive_OR_expr  {}
-                 ;
-
-logical_AND_expr: inclusive_OR_expr                         {}
-                | logical_AND_expr LOGAND inclusive_OR_expr {}
+additive_expr   : multiplicative_expr                       { $$ = $1; }
+                | additive_expr add_op multiplicative_expr  {
+                    $$ = alloc_astnode_binary($2, $1, $3);
+                }
                 ;
 
-logical_OR_expr: logical_AND_expr                       {}
-               | logical_OR_expr LOGOR logical_AND_expr {}
-               ;
+add_op  : '+'   { $$ = '+'; }
+        | '-'   { $$ = '-'; }
+        ;
 
-conditional_expr: logical_OR_expr                               { $$ = $1; }
-                | logical_OR_expr '?' expr ':' conditional_expr { 
+shift_expr  : additive_expr                     { $$ = $1; }
+            | shift_expr shift_op additive_expr {
+                $$ = alloc_astnode_binary($2, $1, $3);
+            }
+            ;
+
+shift_op: SHL   { $$ = SHL; }
+        | SHR   { $$ = SHR; }
+        ;
+
+relational_expr : shift_expr                                { $$ = $1; }
+                | relational_expr relational_op shift_expr  {
+                    $$ = alloc_astnode_binary($2, $1, $3);
+                }
+                ;
+
+relational_op   : '<'   { $$ = '<';  }
+                | '>'   { $$ = '>';  }
+                | LTEQ  { $$ = LTEQ; }
+                | GTEQ  { $$ = GTEQ; }
+                ;
+
+equality_expr   : relational_expr                           { $$ = $1; }
+                | equality_expr equality_op relational_expr {
+                    $$ = alloc_astnode_binary($2, $1, $3);
+                }
+                ;
+
+equality_op : EQEQ  { $$ = EQEQ;  }
+            | NOTEQ { $$ = NOTEQ; }
+            ;
+
+bitwise_or_expr : bitwise_xor_expr                      { $$ = $1; }
+                | bitwise_or_expr '|' bitwise_xor_expr  {
+                    $$ = alloc_astnode_binary('|', $1, $3);
+                }
+                ;
+
+bitwise_xor_expr: bitwise_and_expr                      { $$ = $1; }
+                | bitwise_xor_expr '^' bitwise_and_expr {
+                    $$ = alloc_astnode_binary('^', $1, $3);
+                }
+                ;
+
+bitwise_and_expr: equality_expr                         { $$ = $1; }
+                | bitwise_and_expr '&' equality_expr    {
+                    $$ = alloc_astnode_binary('&', $1, $3);
+                }
+                ;
+
+logical_or_expr : logical_and_expr                          { $$ = $1; }
+                | logical_or_expr LOGOR logical_and_expr    {
+                    $$ = alloc_astnode_binary(LOGOR, $1, $3);
+                }
+                ;
+
+logical_and_expr: bitwise_or_expr                           { $$ = $1; }
+                | logical_and_expr LOGAND bitwise_or_expr   {
+                    $$ = alloc_astnode_binary(LOGAND, $1, $3);
+                }
+                ;
+
+conditional_expr: logical_or_expr                               { $$ = $1; }
+                | logical_or_expr '?' expr ':' conditional_expr { 
                     $$ = alloc_astnode_ternary($1, $3, $5);
                 }
                 ;
 
-assignment_expr: conditional_expr                           {}
-               | unary_expr assignment_op assignment_expr   {}
-               ;
+assignment_expr : conditional_expr                          { $$ = $1; }
+                | unary_expr assignment_op assignment_expr  {
+                     $$ = alloc_astnode_binary($2, $1, $3);
+                }
+                ;
 
-assignment_op: '='      { $$ = '=';     }
-             | TIMESEQ  { $$ = TIMESEQ; }
-             | DIVEQ    { $$ = DIVEQ;   }
-             | MODEQ    { $$ = MODEQ;   }
-             | PLUSEQ   { $$ = PLUSEQ;  }
-             | MINUSEQ  { $$ = MINUSEQ; }
-             | SHLEQ    { $$ = SHLEQ;   }
-             | SHREQ    { $$ = SHREQ;   }
-             | ANDEQ    { $$ = ANDEQ;   }
-             | XOREQ    { $$ = XOREQ;   }
-             | OREQ     { $$ = OREQ;    }
-             ;
+assignment_op   : '='       { $$ = '=';     }
+                | TIMESEQ   { $$ = TIMESEQ; }
+                | DIVEQ     { $$ = DIVEQ;   }
+                | MODEQ     { $$ = MODEQ;   }
+                | PLUSEQ    { $$ = PLUSEQ;  }
+                | MINUSEQ   { $$ = MINUSEQ; }
+                | SHLEQ     { $$ = SHLEQ;   }
+                | SHREQ     { $$ = SHREQ;   }
+                | ANDEQ     { $$ = ANDEQ;   }
+                | XOREQ     { $$ = XOREQ;   }
+                | OREQ      { $$ = OREQ;    }
+                ;
 
 
 %%
