@@ -1,72 +1,72 @@
   BINARY OP ,
    ASSIGNMENT
-    IDENT a 
-    IDENT b 
+    IDENT a
+    IDENT b
    ASSIGNMENT COMPOUND (+)
-    IDENT c 
+    IDENT c
     BINARY OP /
      UNARY OP -
       CONSTANT: (type=int)10
-     IDENT d 
+     IDENT d
   TERNARY OP, IF:
    COMPARISON OP !=
     STRING	X
     STRING	Y
   THEN:
    ASSIGNMENT COMPOUND (-)
-    IDENT e 
+    IDENT e
     CONSTANT: (type=int)1
   ELSE:
    UNARY OP POSTINC
-    IDENT f 
+    IDENT f
   ASSIGNMENT COMPOUND (-)
-   IDENT g 
+   IDENT g
    DEREF
     BINARY OP +
      STRING	ABC
      CONSTANT: (type=int)3
   ASSIGNMENT COMPOUND (%)
-   IDENT h 
+   IDENT h
    UNARY OP +
-    IDENT i 
+    IDENT i
   ASSIGNMENT COMPOUND (/)
-   IDENT i 
+   IDENT i
    CONSTANT: (type=double)15.3
   ASSIGNMENT COMPOUND (<<)
-   IDENT j 
+   IDENT j
    CONSTANT: (type=int)3
   BINARY OP ,
    ASSIGNMENT COMPOUND (>>)
-    IDENT j 
-    IDENT k 
-   IDENT l 
+    IDENT j
+    IDENT k
+   IDENT l
   ASSIGNMENT COMPOUND (&)
-   IDENT m 
+   IDENT m
    LOGICAL OP &&
-    IDENT n 
-    IDENT o 
+    IDENT n
+    IDENT o
   ASSIGNMENT COMPOUND (|)
-   IDENT n 
+   IDENT n
    BINARY OP ^
-    IDENT n 
-    IDENT o 
+    IDENT n
+    IDENT o
   COMPARISON OP >=
    FNCALL, 3 arguments
     IDENT fn
    arg #1=
     LOGICAL OP ||
      LOGICAL OP &&
-      IDENT a 
-      IDENT b 
-     IDENT c 
+      IDENT a
+      IDENT b
+     IDENT c
    arg #2=
     BINARY OP |
      BINARY OP &
-      IDENT d 
-      IDENT e 
+      IDENT d
+      IDENT e
      BINARY OP ^
-      IDENT f 
-      IDENT g 
+      IDENT f
+      IDENT g
    arg #3=
     COMPARISON OP !=
      COMPARISON OP ==
@@ -75,23 +75,23 @@
      CONSTANT: (type=int)0
    BINARY OP <<
     UNARY OP ~
-     IDENT a 
+     IDENT a
     CONSTANT: (type=int)2
   ASSIGNMENT COMPOUND (^)
-   IDENT o 
+   IDENT o
    CONSTANT: (type=int)65
   ASSIGNMENT
-   IDENT p 
+   IDENT p
    ADDRESSOF
     INDIRECT SELECT, member m
-     IDENT x 
+     IDENT x
   DEREF
    UNARY OP POSTINC
     SELECT, member m
-     IDENT q 
+     IDENT q
   ASSIGNMENT
-   IDENT s 
+   IDENT s
    SIZEOF
     ASSIGNMENT COMPOUND (+)
-     IDENT a 
+     IDENT a
      CONSTANT: (type=int)1
