@@ -7,7 +7,7 @@
 typedef struct astnode_s astnode_t;
 
 astnode_t *alloc_astnode_unary(int op, astnode_t *operand);
-astnode_t *alloc_astnode_binary(int op, astnode_t *left, astnode_t *right);
+astnode_t *alloc_astnode_binary(int op, astnode_t *operand1, astnode_t *operand2);
 astnode_t *alloc_astnode_ternary(astnode_t *operand1, astnode_t *operand2, astnode_t *operand3);
 astnode_t *alloc_astnode_ident(string_t ident);
 astnode_t *alloc_astnode_number(number_t number);
@@ -33,8 +33,8 @@ struct astnode_unary_s {
 
 struct astnode_binary_s {
     int op;
-    astnode_t *left;
-    astnode_t *right;
+    astnode_t *operand1;
+    astnode_t *operand2;
 };
 
 struct astnode_ternary_s {

@@ -15,11 +15,11 @@ astnode_t *alloc_astnode_unary(int op, astnode_t *operand) {
     return node;
 }
 
-astnode_t *alloc_astnode_binary(int op, astnode_t *left, astnode_t *right) {
+astnode_t *alloc_astnode_binary(int op, astnode_t *operand1, astnode_t *operand2) {
     astnode_t *node = alloc_astnode(AST_BINARY);
     node->binary.op = op;
-    node->binary.left = left;
-    node->binary.right = right;
+    node->binary.operand1 = operand1;
+    node->binary.operand2 = operand2;
     return node;
 }
 
