@@ -32,8 +32,7 @@
 
 
 
-%type <op>  unary_op
-            mult_op
+%type <op>  mult_op
             add_op
             shift_op
             relational_op
@@ -43,8 +42,17 @@
 %type <astnode_p>   primary_expr
                     postfix_expr
                     argument_expr_list
-                    unary_expr
                     cast_expr
+                    unary_expr
+                    sizeof_expr
+                    unary_minus_expr
+                    unary_plus_expr
+                    logical_negation_expr
+                    bitwise_negation_expr
+                    address_expr
+                    indirection_expr
+                    preincrement_expr
+                    predecrement_expr
                     multiplicative_expr
                     additive_expr
                     shift_expr
@@ -138,25 +146,65 @@ argument_expr_list: assignment_expr                         {}
                   | argument_expr_list ',' assignment_expr  {}
                   ;
 
-unary_expr: postfix_expr                {}
-          | PLUSPLUS unary_expr         {}
-          | MINUSMINUS unary_expr       {}
-          | unary_op cast_expr          {}
-          | SIZEOF unary_expr           {}
-          //| SIZEOF '(' type_name ')'    {}
-          ;
 
-unary_op: '&'   { $$ = '&'; }
-        | '*'   { $$ = '*'; }
-        | '+'   { $$ = '+'; }
-        | '-'   { $$ = '-'; }
-        | '~'   { $$ = '~'; }
-        | '!'   { $$ = '!'; }
-        ;
 
 cast_expr   : unary_expr                   { $$ = $1; }
             //| '(' type_name ')' cast_expr  {}
             ;
+
+unary_expr  : postfix_expr          { $$ = $1; }
+            | sizeof_expr           { $$ = $1; }
+            | unary_minus_expr      { $$ = $1; }
+            | unary_plus_expr       { $$ = $1; }
+            | logical_negation_expr { $$ = $1; }
+            | bitwise_negation_expr { $$ = $1; }
+            | address_expr          { $$ = $1; }
+            | indirection_expr      { $$ = $1; }
+            | preincrement_expr     { $$ = $1; }
+            | predecrement_expr     { $$ = $1; }
+            ;
+
+sizeof_expr : SIZEOF unary_expr {}
+            //| SIZEOF '(' type_name ')' {}
+            ;
+
+unary_minus_expr: '-' cast_expr {}
+                ;
+
+unary_plus_expr : '+' cast_expr {}
+                ;
+
+logical_negation_expr   : '!' cast_expr {}
+                        ;
+
+bitwise_negation_expr   : '~' cast_expr {}
+                        ;
+
+address_expr    : '&' cast_expr {}
+                ;
+
+indirection_expr    : '*' cast_expr {}
+                    ;
+
+preincrement_expr   : PLUSPLUS unary_expr   {
+                        number_t one = {
+                            .integer = 1,
+                            .type = NUM_INT
+                        };
+                        astnode_t *tmp = alloc_astnode_number(one);
+                        $$ = alloc_astnode_binary('+', $2, tmp);
+                    }
+                    ;
+
+predecrement_expr   : MINUSMINUS unary_expr {
+                        number_t one = {
+                            .integer = 1,
+                            .type = NUM_INT
+                        };
+                        astnode_t *tmp = alloc_astnode_number(one);
+                        $$ = alloc_astnode_binary('-', $2, tmp);
+                    }
+                    ;
 
 multiplicative_expr : cast_expr                             { $$ = $1; }
                     | multiplicative_expr mult_op cast_expr {
