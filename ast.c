@@ -44,14 +44,20 @@ void print_ast(astnode_t *node) {
     switch(node->type) {
         case AST_BINOP:
             break;
-        case AST_CHARLIT:
-            break;
-        case AST_STRING:
+        case AST_IDENT:
+            fprintf(stdout, "IDENT: %s\n", node->ident.str.string_literal);
             break;
         case AST_NUM:
+            if (node->num.num.type >= NUM_INT )
+                fprintf(stdout, "CONSTANT: (type=int) %lld\n", node->num.num.integer);
+            else
+                fprintf(stdout, "CONSTANT: (type=double) %Lf\n", node->num.num.real);
             break;
-        case AST_IDENT:
-            fprintf(stdout, "IDENT: %s\n", node->str.str.string_literal);
+        case AST_CHARLIT:
+            fprintf(stdout, "CHARLIT: %o\n", node->charlit.char_literal);
+            break;
+        case AST_STRING:
+            fprintf(stdout, "STRING: %s\n", node->str.str.string_literal);
             break;
         default:
             break;

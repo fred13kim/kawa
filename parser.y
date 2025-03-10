@@ -90,23 +90,23 @@
 %%
 
 
-statement: expr_statement           {  }
-         | statement expr_statement {  }
+statement: expr_statement           
+         | statement expr_statement 
          ;
 
-expr_statement: expr ';'        {  }
-              | /* opt */ ';'   {  }
+expr_statement: expr ';'        { print_ast($1); }
+              | /* opt */ ';'   
               ;
 
-expr: assignment_expr           {  }
-    | expr ',' assignment_expr  {  }
+expr: assignment_expr           { $$ = $1; }
+    | expr ',' assignment_expr  { $$ = alloc_astnode_binop(',', $1, $3); }
     ;
 
-primary_expr: IDENT         {}
-            | NUMBER        {}
-            | CHARLIT       {}
-            | STRING        {}
-            | '(' expr ')'  {}
+primary_expr: IDENT         { $$ = alloc_astnode_ident($1); }
+            | NUMBER        { $$ = alloc_astnode_number($1); }
+            | CHARLIT       { $$ = alloc_astnode_charlit($1); }
+            | STRING        { $$ = alloc_astnode_string($1); }
+            | '(' expr ')'  { $$ = $2; }
             ;
 
 postfix_expr: primary_expr                              {}

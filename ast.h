@@ -16,16 +16,24 @@ void print_ast(astnode_t *node);
 
 enum nodetype{
     AST_BINOP,
+    AST_IDENT,
+    AST_NUM,
     AST_CHARLIT,
     AST_STRING,
-    AST_NUM,
-    AST_IDENT,
 };
 
 struct astnode_binary_s {
     int op;
     astnode_t *left;
     astnode_t *right;
+};
+
+struct astnode_ident_s {
+    string_t str;
+};
+
+struct astnode_num_s {
+    number_t num;
 };
 
 struct astnode_charlit_s {
@@ -36,22 +44,14 @@ struct astnode_string_s {
     string_t str;
 };
 
-struct astnode_num_s {
-    number_t num;
-};
-
-struct astnode_ident_s {
-    string_t str;
-};
-
 struct astnode_s {
     enum nodetype type;
     union {
         struct astnode_binary_s  binary;
+        struct astnode_ident_s   ident;
+        struct astnode_num_s     num;
         struct astnode_charlit_s charlit;
         struct astnode_string_s  str;
-        struct astnode_num_s     num;
-        struct astnode_ident_s   ident;
     };
 };
 
