@@ -23,6 +23,13 @@ astnode_t *alloc_astnode_binary(int op, astnode_t *left, astnode_t *right) {
     return node;
 }
 
+astnode_t *alloc_astnode_ternary(astnode_t *operand1, astnode_t *operand2, astnode_t *operand3) {
+    astnode_t *node = alloc_astnode(AST_TERNARY);
+    node->ternary.operand1 = operand1;
+    node->ternary.operand2 = operand2;
+    node->ternary.operand3 = operand3;
+}
+
 astnode_t *alloc_astnode_ident(string_t ident) {
     astnode_t *node = alloc_astnode(AST_IDENT);
     node->ident.str = ident;
