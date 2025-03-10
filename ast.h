@@ -6,9 +6,10 @@
 
 typedef struct astnode_s astnode_t;
 
-astnode_t *alloc_astnode_unary(int op, astnode_t *operand);
-astnode_t *alloc_astnode_binary(int op, astnode_t *operand1, astnode_t *operand2);
-astnode_t *alloc_astnode_ternary(astnode_t *operand1, astnode_t *operand2, astnode_t *operand3);
+astnode_t *alloc_astnode_unary(int op, astnode_t *expr);
+astnode_t *alloc_astnode_binary(int op, astnode_t *expr1, astnode_t *expr2);
+astnode_t *alloc_astnode_ternary(astnode_t *expr1, astnode_t *expr2, astnode_t *expr3);
+astnode_t *alloc_astnode_select(astnode_t *expr, string_t ident);
 astnode_t *alloc_astnode_ident(string_t ident);
 astnode_t *alloc_astnode_number(number_t number);
 astnode_t *alloc_astnode_charlit(char charlit);
@@ -20,6 +21,7 @@ enum nodetype{
     AST_UNARY,
     AST_BINARY,
     AST_TERNARY,
+    AST_SELECT,
     AST_IDENT,
     AST_NUM,
     AST_CHARLIT,
@@ -28,19 +30,24 @@ enum nodetype{
 
 struct astnode_unary_s {
     int op;
-    astnode_t *operand;
+    astnode_t *expr;
 };
 
 struct astnode_binary_s {
     int op;
-    astnode_t *operand1;
-    astnode_t *operand2;
+    astnode_t *expr1;
+    astnode_t *expr2;
 };
 
 struct astnode_ternary_s {
-    astnode_t *operand1;
-    astnode_t *operand2;
-    astnode_t *operand3;
+    astnode_t *expr1;
+    astnode_t *expr2;
+    astnode_t *expr3;
+};
+
+struct astnode_select_s {
+    astnode_t *expr;
+    astnode_t *ident;
 };
 
 struct astnode_ident_s {
@@ -65,6 +72,7 @@ struct astnode_s {
         struct astnode_unary_s      unary;
         struct astnode_binary_s     binary;
         struct astnode_ternary_s    ternary;
+        struct astnode_select_s     select;
         struct astnode_ident_s      ident;
         struct astnode_num_s        num;
         struct astnode_charlit_s    charlit;

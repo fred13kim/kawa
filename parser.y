@@ -41,7 +41,15 @@
 
 %type <astnode_p>   primary_expr
                     postfix_expr
-                    argument_expr_list
+                    subscript_expr
+                    component_selection_expr
+                    direct_component_selection
+                    indirect_component_selection
+                    function_call
+                    expr_list
+                    postincrement_expr
+                    postdecrement_expr
+                    /* compound_literal */
                     cast_expr
                     unary_expr
                     sizeof_expr
@@ -112,6 +120,7 @@ statement: expr_statement
 expr_statement: expr ';'        { print_ast($1); }
               | /* opt */ ';'   
               ;
+
 expr: comma_expr    { $$ = $1; }
     ;
 
@@ -127,26 +136,60 @@ primary_expr: IDENT         { $$ = alloc_astnode_ident($1); }
             | '(' expr ')'  { $$ = $2; }
             ;
 
-postfix_expr: primary_expr                              { $$ = $1; }
-            | postfix_expr '[' expr ']'                 {
-                astnode_t *tmp = alloc_astnode_binary('+', $1, $3);
-                $$ = alloc_astnode_unary('*', tmp);
-            }
-            | postfix_expr '(' argument_expr_list ')'   {}
-            | postfix_expr '(' ')'                      {}
-            | postfix_expr '.' IDENT                    {}
-            | postfix_expr INDSEL IDENT                 {}
-            | postfix_expr PLUSPLUS                     {}
-            | postfix_expr MINUSMINUS                   {}
-            //| '(' type_name ')' '{' init_list '}'       {}
-            //| '(' type_name ')' '{' init_list ',' '}'   {}
+postfix_expr: primary_expr              { $$ = $1; }
+            | subscript_expr            { $$ = $1; }
+            | component_selection_expr  { $$ = $1; }
+            | function_call             {}
+            | postincrement_expr        { $$ = $1; }
+            | postdecrement_expr        { $$ = $1; }
+            //| compound_literal                          {}
             ;
 
-argument_expr_list: assignment_expr                         {}
-                  | argument_expr_list ',' assignment_expr  {}
-                  ;
+subscript_expr  : postfix_expr '[' expr ']' {
+                    $$ = alloc_astnode_binary('+', $1, $3);
+                    $$ = alloc_astnode_unary('*', $$);
+                }
+                ;
 
+component_selection_expr: direct_component_selection    { $$ = $1; }
+                        | indirect_component_selection  { $$ = $1; }
+                        ;
 
+direct_component_selection  : postfix_expr '.' IDENT    {
+                                $$ = alloc_astnode_select($1, $3);
+                            }
+                            ;
+
+indirect_component_selection: postfix_expr INDSEL IDENT {
+                                $$ = alloc_astnode_unary('*', $1);
+                                $$ = alloc_astnode_select($$, $3);
+                            }
+                            ;
+
+function_call   : postfix_expr '(' expr_list ')'    {}
+                | postfix_expr '(' ')'              {}
+                ;
+
+expr_list   : assignment_expr               { $$ = $1; }
+            | expr_list ',' assignment_expr {
+                $$ = alloc_astnode_binary(',', $1, $3);
+            }
+            ;
+
+postincrement_expr  : postfix_expr PLUSPLUS {
+                        $$ = alloc_astnode_unary(PLUSPLUS, $1);
+                    }
+                    ;
+postdecrement_expr  : postfix_expr MINUSMINUS   {
+                        $$ = alloc_astnode_unary(MINUSMINUS, $1);
+                    }
+                    ;
+
+/*
+compound_literal: '(' type_name ')' '{' init_list '}'       {}
+                | '(' type_name ')' '{' init_list ',' '}'   {}
+                ;
+*/
 
 cast_expr   : unary_expr                   { $$ = $1; }
             //| '(' type_name ')' cast_expr  {}
@@ -191,8 +234,8 @@ preincrement_expr   : PLUSPLUS unary_expr   {
                             .integer = 1,
                             .type = NUM_INT
                         };
-                        astnode_t *tmp = alloc_astnode_number(one);
-                        $$ = alloc_astnode_binary('+', $2, tmp);
+                        $$ = alloc_astnode_number(one);
+                        $$ = alloc_astnode_binary(PLUSEQ, $2, $$);
                     }
                     ;
 
@@ -201,8 +244,8 @@ predecrement_expr   : MINUSMINUS unary_expr {
                             .integer = 1,
                             .type = NUM_INT
                         };
-                        astnode_t *tmp = alloc_astnode_number(one);
-                        $$ = alloc_astnode_binary('-', $2, tmp);
+                        $$ = alloc_astnode_number(one);
+                        $$ = alloc_astnode_binary(MINUSEQ, $2, $$);
                     }
                     ;
 

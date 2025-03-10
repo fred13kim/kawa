@@ -3,55 +3,66 @@
 #include "ast.h"
 
 astnode_t *alloc_astnode(enum nodetype t) {
-    astnode_t *node = malloc(sizeof(astnode_t));
-    node->type = t;
-    return node;
+    astnode_t *astnode = malloc(sizeof(astnode_t));
+    astnode->type = t;
+    return astnode;
 }
 
-astnode_t *alloc_astnode_unary(int op, astnode_t *operand) {
-    astnode_t *node = alloc_astnode(AST_UNARY);
-    node->unary.op = op;
-    node->unary.operand = operand;
-    return node;
+astnode_t *alloc_astnode_unary(int op, astnode_t *expr) {
+    astnode_t *astnode = alloc_astnode(AST_UNARY);
+    astnode->unary.op = op;
+    astnode->unary.expr = expr;
+    return astnode;
 }
 
-astnode_t *alloc_astnode_binary(int op, astnode_t *operand1, astnode_t *operand2) {
-    astnode_t *node = alloc_astnode(AST_BINARY);
-    node->binary.op = op;
-    node->binary.operand1 = operand1;
-    node->binary.operand2 = operand2;
-    return node;
+astnode_t *alloc_astnode_binary(int op, astnode_t *expr1, astnode_t *expr2) {
+    astnode_t *astnode = alloc_astnode(AST_BINARY);
+    astnode->binary.op = op;
+    astnode->binary.expr1 = expr1;
+    astnode->binary.expr2 = expr2;
+    return astnode;
 }
 
-astnode_t *alloc_astnode_ternary(astnode_t *operand1, astnode_t *operand2, astnode_t *operand3) {
-    astnode_t *node = alloc_astnode(AST_TERNARY);
-    node->ternary.operand1 = operand1;
-    node->ternary.operand2 = operand2;
-    node->ternary.operand3 = operand3;
+astnode_t *alloc_astnode_ternary(astnode_t *expr1, astnode_t *expr2, astnode_t *expr3) {
+    astnode_t *astnode = alloc_astnode(AST_TERNARY);
+    astnode->ternary.expr1 = expr1;
+    astnode->ternary.expr2 = expr2;
+    astnode->ternary.expr3 = expr3;
+    return astnode;
+}
+
+astnode_t *alloc_astnode_select(astnode_t *expr, string_t ident) {
+    astnode_t *astnode_ident = alloc_astnode(AST_IDENT);
+    astnode_ident->ident.str = ident;
+
+    astnode_t *astnode = alloc_astnode(AST_SELECT);
+    astnode->select.expr = expr;
+    astnode->select.ident = astnode_ident;
+    return astnode;
 }
 
 astnode_t *alloc_astnode_ident(string_t ident) {
-    astnode_t *node = alloc_astnode(AST_IDENT);
-    node->ident.str = ident;
-    return node;
+    astnode_t *astnode = alloc_astnode(AST_IDENT);
+    astnode->ident.str = ident;
+    return astnode;
 }
 
 astnode_t *alloc_astnode_number(number_t number) {
-    astnode_t *node = alloc_astnode(AST_NUM);
-    node->num.num = number;
-    return node;
+    astnode_t *astnode = alloc_astnode(AST_NUM);
+    astnode->num.num = number;
+    return astnode;
 }
 
 astnode_t *alloc_astnode_charlit(char charlit) {
-    astnode_t *node = alloc_astnode(AST_CHARLIT);
-    node->charlit.char_literal = charlit;
-    return node;
+    astnode_t *astnode = alloc_astnode(AST_CHARLIT);
+    astnode->charlit.char_literal = charlit;
+    return astnode;
 };
 
 astnode_t *alloc_astnode_string(string_t string) {
-    astnode_t *node = alloc_astnode(AST_STRING);
-    node->str.str = string;
-    return node;
+    astnode_t *astnode = alloc_astnode(AST_STRING);
+    astnode->str.str = string;
+    return astnode;
 }
 
 void print_ast(astnode_t *node) {
