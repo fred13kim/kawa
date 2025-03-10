@@ -99,7 +99,7 @@ expr_statement: expr ';'        { print_ast($1); }
               ;
 
 expr: assignment_expr           { $$ = $1; }
-    | expr ',' assignment_expr  { $$ = alloc_astnode_binop(',', $1, $3); }
+    | expr ',' assignment_expr  { $$ = alloc_astnode_binary(',', $1, $3); }
     ;
 
 primary_expr: IDENT         { $$ = alloc_astnode_ident($1); }
@@ -109,8 +109,11 @@ primary_expr: IDENT         { $$ = alloc_astnode_ident($1); }
             | '(' expr ')'  { $$ = $2; }
             ;
 
-postfix_expr: primary_expr                              {}
-            | postfix_expr '[' expr ']'                 {}
+postfix_expr: primary_expr                              { $$ = $1; }
+            | postfix_expr '[' expr ']'                 {
+                astnode_t *tmp = alloc_astnode_binary('+', $1, $3);
+                $$ = alloc_astnode_unary('*', tmp);
+            }
             | postfix_expr '(' argument_expr_list ')'   {}
             | postfix_expr '(' ')'                      {}
             | postfix_expr '.' IDENT                    {}
@@ -194,8 +197,10 @@ logical_OR_expr: logical_AND_expr                       {}
                | logical_OR_expr LOGOR logical_AND_expr {}
                ;
 
-conditional_expr: logical_OR_expr                               {}
-                | logical_OR_expr '?' expr ':' conditional_expr {}
+conditional_expr: logical_OR_expr                               { $$ = $1; }
+                | logical_OR_expr '?' expr ':' conditional_expr { 
+                    $$ = alloc_astnode_ternary($1, $3, $5);
+                }
                 ;
 
 assignment_expr: conditional_expr                           {}
