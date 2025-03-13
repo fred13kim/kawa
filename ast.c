@@ -5,6 +5,10 @@
 
 astnode_t *alloc_astnode(enum nodetype t) {
     astnode_t *astnode = malloc(sizeof(astnode_t));
+    if (!astnode) {
+        fprintf(stderr,"Error: failed to malloc astnode\n");
+        exit(-1);
+    }
     astnode->type = t;
     return astnode;
 }
