@@ -126,10 +126,11 @@ expr_statement  : expr ';'        {
 expr: comma_expr    { $$ = $1; }
     ;
 
-comma_expr: assignment_expr                 { $$ = $1; }
-          | comma_expr ',' assignment_expr  {
-              $$ = alloc_astnode_binary(',', $1, $3);
-          }
+comma_expr  : assignment_expr                 { $$ = $1; }
+            | comma_expr ',' assignment_expr  {
+                $$ = alloc_astnode_binary(',', $1, $3);
+            }
+            ;
 
 primary_expr: IDENT         { $$ = alloc_astnode_ident($1); }
             | NUMBER        { $$ = alloc_astnode_number($1); }
