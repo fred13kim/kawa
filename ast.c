@@ -173,9 +173,7 @@ void print_ast(astnode_t *astnode) {
                 default:            fprintf(stdout, "UNARY OP %c", astnode->unary.op); break;
             }
             fprintf(stdout,"\n");
-            space++;
-            print_ast(astnode->unary.expr);
-            space--;
+            space++; print_ast(astnode->unary.expr); space--;
             break;
         case AST_BINARY:
             if(astnode->binary.op == '=') {
@@ -206,54 +204,38 @@ void print_ast(astnode_t *astnode) {
             break;
         case AST_TERNARY:
             fprintf(stdout, "TERNARY OP, IF:\n");
-            space++;
-            print_ast(astnode->ternary.expr1);
-            space--;
+            space++; print_ast(astnode->ternary.expr1); space--;
             print_indent(space);
             fprintf(stdout, "THEN:\n");
-            space++;
-            print_ast(astnode->ternary.expr2);
-            space--;
+            space++; print_ast(astnode->ternary.expr2); space--;
             print_indent(space);
             fprintf(stdout, "ELSE:\n");
-            space++;
-            print_ast(astnode->ternary.expr3);
-            space--;
+            space++; print_ast(astnode->ternary.expr3); space--;
             break;
         case AST_SELECT:
             if((astnode->select.expr)->unary.op && ((astnode->select.expr)->unary.op == '*')) {
                 fprintf(stdout, "INDIRECT SELECT, member %s\n", (astnode->select.ident)->ident.str.string_literal);
-                space++;
-                print_ast((astnode->select.expr)->unary.expr);
-                space--;
+                space++; print_ast((astnode->select.expr)->unary.expr); space--;
             }
             else {
                 fprintf(stdout, "SELECT, member %s\n", (astnode->select.ident)->ident.str.string_literal);
-                space++;
-                print_ast(astnode->select.expr);
-                space--;
+                space++; print_ast(astnode->select.expr); space--;
             }
             break;
         case AST_FNCALL:
             if(!(astnode->fncall.args)) {
                 fprintf(stdout, "FNCALL\n");
-                space++;
-                print_ast(astnode->fncall.name);
-                space--;
+                space++; print_ast(astnode->fncall.name); space--;
             }
             else {
                 fprintf(stdout, "FNCALL, %d arguments\n", astnode->fncall.args->arg_list.size);
-                space++;
-                print_ast(astnode->fncall.name);
-                space--;
+                space++; print_ast(astnode->fncall.name); space--;
                 astnode_t *cur = astnode->fncall.args->arg_list.head;
                 int count = 1;
                 while(cur) {
                     print_indent(space);
                     fprintf(stdout, "arg #%d=\n", count++);
-                    space++;
-                    print_ast(cur->arg_node.arg);
-                    space--;
+                    space++; print_ast(cur->arg_node.arg); space--;
                     cur = cur->arg_node.next;
                 }
 
@@ -261,9 +243,7 @@ void print_ast(astnode_t *astnode) {
             break;
         case AST_SIZEOF:
             fprintf(stdout,"SIZEOF\n");
-            space++;
-            print_ast(astnode->_sizeof.expr);
-            space--;
+            space++; print_ast(astnode->_sizeof.expr); space--;
             break;
         case AST_IDENT:
             fprintf(stdout, "IDENT %s\n", astnode->ident.str.string_literal);
