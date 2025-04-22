@@ -1,4 +1,3 @@
-%option     outfile="lexer.c"
 %option     noyywrap
 %option     yylineno
 %{
