@@ -1,8 +1,9 @@
 #ifndef SYMTABLE_H
 #define SYMTABLE_H
 
+typedef struct symtable_entry_s symtable_entry_t;
 
-typedef struct symtable_entry_s {
+struct symtable_entry_s {
     char *filename;
     int lineno;
 
@@ -17,17 +18,26 @@ typedef struct symtable_entry_s {
      * struct/union member
      */
 
-} symtable_entry_t;
+};
 
-typedef struct symtable_ll_node_s {
+typedef struct symtable_entry_node_s {
     symtable_entry_t *entry;
-    struct symtable_ll_node_s *next;
-} symtable_ll_node_t;
+    struct symtable_entry_node_s *next;
+} symtable_entry_node_t;
 
-typedef struct symtable_ll_list_s {
+typedef struct symtable_entry_list_s {
     int size;
-    symtable_ll_node_t *head;
-    symtable_ll_node_t *tail;
-} symtable_ll;
+    symtable_entry_node_t *head;
+    symtable_entry_node_t *tail;
+} symtable_entry_list_t;
+
+struct symtable_s {
+    /* data within a symtable */
+    int scope;
+    symtable_entry_list_t *list;
+
+    /* symtable points to another symtable */
+    struct symtable_s *next;
+};
 
 #endif // !SYMTABLE_H
