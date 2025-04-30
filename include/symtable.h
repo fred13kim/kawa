@@ -8,6 +8,9 @@ typedef struct symtable_s symtable_t;
 
 
 symtable_t *symtable_create(int scope);
+void symtable_destroy(symtable_t *table);
+symtable_entry_t *lookup(symtable_t *table, symtable_entry_t *entry);
+bool *enter(symtable_t *table, symtable_entry_t *entry);
 
 struct symtable_entry_s {
     char *filename;

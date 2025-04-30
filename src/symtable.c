@@ -8,14 +8,14 @@ symtable_t *symtable_create(int scope) {
     return table;
 }
 
-void destroy() {
+void symtable_destroy(symtable_t *table) {
 
 }
 
-void lookup() {
+symtable_entry_t *lookup(symtable_t *table, symtable_entry_t *entry) {
 
 }
 
-void enter() {
+bool *enter(symtable_t *table, symtable_entry_t *entry) {
 
 }
