@@ -58,11 +58,13 @@ symtable_entry_t *lookup(symtable_t *table, symtable_entry_t *entry) {
 }
 
 bool enter(symtable_t *table, symtable_entry_t *entry) {
-
-
     /*
      * first check if the entry is in our table if not proceed
      */
+
+    if (lookup(table, entry)) {
+        return false;
+    }
 
     symtable_entry_node_t *entry_node = malloc(sizeof(symtable_entry_node_t));
     if(!entry_node) {
