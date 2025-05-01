@@ -37,21 +37,22 @@ symtable_entry_t *lookup(symtable_t *table, symtable_entry_t *entry) {
          * let's check through our entry list
          */
         cur_list = table->list;
-        if (cur_list != NULL) {
-            cur_node = cur_list->head;
-            while(cur_node) {
-                if (cur_node->entry != NULL) {
-                    if (symtable_compare_entry(cur_node->entry, entry)) {
-                        return cur_node->entry;
-                    }
-                }
-                cur_node = cur_node->next;
-            }
+        if (cur_list == NULL) {
+            cur = cur->next;
+            continue;
         }
 
-        /*
-         * if the entry is not in this scope go to the next scope
-         */
+        cur_node = cur_list->head;
+        while(cur_node) {
+            if (cur_node->entry == NULL) {
+                cur_node = cur_node->next;
+                continue;
+            }
+            if (symtable_compare_entry(cur_node->entry, entry)) {
+                return cur_node->entry;
+            }
+            cur_node = cur_node->next;
+        }
         cur = cur->next;
     }
     return NULL;
