@@ -13,6 +13,11 @@ void symtable_destroy(symtable_t *table) {
     free(table);
 }
 
+bool symtable_compare_entry(symtable_entry_t *entry1, symtable_entry_t *entry2) {
+
+}
+
+
 
 /*
  * in our current scope, let's check if the entry is in the list
@@ -20,14 +25,32 @@ void symtable_destroy(symtable_t *table) {
 symtable_entry_t *lookup(symtable_t *table, symtable_entry_t *entry) {
     symtable_t *cur = table;
     symtable_entry_list_t *cur_list;
-    symtable_entry_t *tmp;
-    while(cur) {
+    symtable_entry_node_t *cur_node;
 
+    while(cur) {
+        /*
+         * let's check through our entry list
+         */
+        cur_list = table->list;
+        if (cur_list != NULL) {
+            cur_node = cur_list->head;
+            while(cur_node) {
+                if (cur_node->entry != NULL)
+                cur_node = cur_node->next;
+            }
+        }
+
+        /*
+         * if the entry is not in this scope go to the next scope
+         */
         cur = cur->next;
     }
+    return NULL;
 }
 
 bool enter(symtable_t *table, symtable_entry_t *entry) {
+
+
     /*
      * first check if the entry is in our table if not proceed
      */
