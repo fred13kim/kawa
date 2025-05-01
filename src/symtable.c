@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "symtable.h"
 
 symtable_t *symtable_create(int scope) {
@@ -14,7 +15,11 @@ void symtable_destroy(symtable_t *table) {
 }
 
 bool symtable_compare_entry(symtable_entry_t *entry1, symtable_entry_t *entry2) {
-
+    if ((strcmp(entry1->name,entry2->name) == 0)
+            && (entry1->namespace == entry2->namespace)) {
+        return true;
+    }
+    return false;
 }
 
 
@@ -35,7 +40,11 @@ symtable_entry_t *lookup(symtable_t *table, symtable_entry_t *entry) {
         if (cur_list != NULL) {
             cur_node = cur_list->head;
             while(cur_node) {
-                if (cur_node->entry != NULL)
+                if (cur_node->entry != NULL) {
+                    if (symtable_compare_entry(cur_node->entry, entry)) {
+                        return cur_node->entry;
+                    }
+                }
                 cur_node = cur_node->next;
             }
         }
