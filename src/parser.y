@@ -80,6 +80,7 @@
                     logical_or_expr
                     logical_and_expr
                     conditional_expr
+                    assignment_expr_opt
                     assignment_expr
                     comma_expr
                     expr_opt
@@ -112,8 +113,8 @@
                     direct_abstract_declarator_opt
                     direct_abstract_declarator
                     /* typedef_name */
-                    initializer
-                    initializer_list
+                    /* initializer  */
+                    /* initializer_list */
                     designation
                     designator_list
                     designator
@@ -461,7 +462,7 @@ init_declarator_list: init_declarator
                     ;
 
 init_declarator : declarator
-                | declarator '=' initializer
+                //| declarator '=' initializer
                 ;
 
 storage_class_specifier : TYPEDEF
@@ -561,6 +562,7 @@ direct_abstract_declarator  : '(' abstract_declarator ')'
                             | direct_abstract_declarator_opt '(' parameter_type_list_opt ')'
                             ;
 
+/*
 initializer : assignment_expr
             | '{' initializer_list '}'
             | '{' identifier_list ',' '}'
@@ -571,6 +573,7 @@ initializer_list: designation initializer
                 | initializer_list ',' designation initializer
                 | initializer_list ',' initializer
                 ;
+*/
 
 designation : designator_list '='
             ;
@@ -584,12 +587,12 @@ designator  : '[' constant_expr ']'
             ;
 
 
-statement   : labeled_statement     
-            | compound_statement    
-            | expr_statement        
-            | selection_statement   
-            | iteration_statement   
-            | jump_statement        
+statement   : labeled_statement     { $$ = $1; }
+            | compound_statement    { $$ = $1; }
+            | expr_statement        { $$ = $1; }
+            | selection_statement   { $$ = $1; }
+            | iteration_statement   { $$ = $1; }
+            | jump_statement        { $$ = $1; }
             ;
 
 labeled_statement   : IDENT ':' statement
@@ -609,7 +612,7 @@ block_item  : declaration
             | statement
             ;
 
-expr_statement  : expr_opt ';'
+expr_statement  : expr_opt ';'  { $$ = $1; }
                 ;
 
 selection_statement : IF '(' expr ')' statement
