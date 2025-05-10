@@ -2,6 +2,7 @@
 #define SYMTABLE_H
 
 #include <stdbool.h>
+#include "ast.h"
 
 typedef struct symtable_entry_s symtable_entry_t;
 typedef struct symtable_entry_node_s symtable_entry_node_t;
@@ -14,12 +15,15 @@ void symtable_destroy(symtable_t *table);
 symtable_entry_t *lookup(symtable_t *table, symtable_entry_t *entry);
 bool enter(symtable_t *table, symtable_entry_t *entry);
 
-
 struct attr_variable_s {
-
+    astnode_t *type;
+    int storage_class;
+    int offset; /* within stack frame for automatic storage class only ? */
 };
 
 struct attr_function_s {
+    astnode_t *type;
+    int storage_class;
 
 };
 
@@ -48,10 +52,6 @@ struct attr_struct_union_member_s {
 };
 
 
-
-
-
-
 struct symtable_entry_s {
     char *filename;
     int lineno;
@@ -70,17 +70,6 @@ struct symtable_entry_s {
         struct attr_typedef_name_s          typedef_name;
         struct attr_struct_union_member_s   struct_union_member;
     };
-    /* will contain the following attritubtes:
-     * variable
-     * function
-     * struct/union tag
-     * enum tag
-     * enum constant
-     * statement label
-     * typedef name
-     * struct/union member
-     */
-
 };
 
 struct symtable_entry_node_s {
