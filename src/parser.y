@@ -502,16 +502,16 @@ storage_class_specifier : TYPEDEF
                         ;
 
 type_specifier  : VOID      { $$ = alloc_astnode_declaration_spec($1); }
-                | CHAR      {}
-                | SHORT     {}
-                | INT       {}
-                | LONG      {}
-                | FLOAT     {}
-                | DOUBLE    {}
-                | SIGNED    {}
-                | UNSIGNED  {}
-                | _BOOL     {}
-                | _COMPLEX  {}
+                | CHAR      { $$ = alloc_astnode_declaration_spec($1); }
+                | SHORT     { $$ = alloc_astnode_declaration_spec($1); }
+                | INT       { $$ = alloc_astnode_declaration_spec($1); }
+                | LONG      { $$ = alloc_astnode_declaration_spec($1); }
+                | FLOAT     { $$ = alloc_astnode_declaration_spec($1); }
+                | DOUBLE    { $$ = alloc_astnode_declaration_spec($1); }
+                | SIGNED    { $$ = alloc_astnode_declaration_spec($1); }
+                | UNSIGNED  { $$ = alloc_astnode_declaration_spec($1); }
+                | _BOOL     { $$ = alloc_astnode_declaration_spec($1); }
+                | _COMPLEX  { $$ = alloc_astnode_declaration_spec($1); }
                 //| struct_or_union_specifier   i fear
                 //| enum_specifier              i am
                 //| typedef_name                joever & cooked
