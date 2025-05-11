@@ -494,11 +494,11 @@ init_declarator : declarator                    { $$ = $1; }
                 //| declarator '=' initializer    { }
                 ;
 
-storage_class_specifier : TYPEDEF
-                        | EXTERN
-                        | STATIC
-                        | AUTO      
-                        | REGISTER  {}
+storage_class_specifier : TYPEDEF   { $$ = alloc_astnode_declaration_spec($1); }
+                        | EXTERN    { $$ = alloc_astnode_declaration_spec($1); }
+                        | STATIC    { $$ = alloc_astnode_declaration_spec($1); }
+                        | AUTO      { $$ = alloc_astnode_declaration_spec($1); }
+                        | REGISTER  { $$ = alloc_astnode_declaration_spec($1); }
                         ;
 
 type_specifier  : VOID      { $$ = alloc_astnode_declaration_spec($1); }
@@ -522,11 +522,11 @@ type_qualifier  : CONST     { $$ = alloc_astnode_declaration_spec($1); }
                 | VOLATILE  { $$ = alloc_astnode_declaration_spec($1); }
                 ;
 
-function_specifier  : INLINE
+function_specifier  : INLINE    { $$ = alloc_astnode_declaration_spec($1); }   
                     ;
 
-declarator  : pointer direct_declarator
-            | direct_declarator
+declarator  : pointer direct_declarator { append_astnode($1, $2); }
+            | direct_declarator         { $$ = $1; }
             ;
 
 direct_declarator   : IDENT
