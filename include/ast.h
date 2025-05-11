@@ -19,6 +19,8 @@ astnode_t *alloc_astnode_ident(string_t ident);
 astnode_t *alloc_astnode_number(number_t number);
 // astnode_t *alloc_astnode_charlit(char charlit);
 astnode_t *alloc_astnode_string(string_t string);
+astnode_t *alloc_astnode_declaration(astnode_t *declaration_spec_list, astnode_t *init_declarator_list);
+astnode_t *alloc_astnode_declaration_spec(int spec);
 
 void print_ast(astnode_t *node);
 
@@ -36,6 +38,7 @@ enum nodetype{
     AST_CHARLIT,
     AST_STRING,
     AST_DECLARATION,
+    AST_DECLARATION_SPEC,
 };
 
 struct astnode_unary_s {
@@ -97,8 +100,12 @@ struct astnode_string_s {
 };
 
 struct astnode_declaration_s {
-    astnode_t *declaration_specifier_list;
+    astnode_t *declaration_spec_list;
     astnode_t *init_declarator_list;
+};
+
+struct astnode_declaration_spec_s {
+    int spec;
 };
 
 struct astnode_s {
@@ -117,6 +124,7 @@ struct astnode_s {
         // struct astnode_charlit_s    charlit;
         struct astnode_string_s     str;
         struct astnode_declaration_s    declaration;
+        struct astnode_declaration_spec_s declaration_spec;
     };
 };
 

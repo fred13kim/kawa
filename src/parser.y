@@ -491,7 +491,7 @@ init_declarator_list: init_declarator                           {
                     ;
 
 init_declarator : declarator                    { $$ = $1; }
-                | declarator '=' initializer    { }
+                //| declarator '=' initializer    { }
                 ;
 
 storage_class_specifier : TYPEDEF
@@ -501,7 +501,7 @@ storage_class_specifier : TYPEDEF
                         | REGISTER  {}
                         ;
 
-type_specifier  : VOID      {}
+type_specifier  : VOID      { $$ = alloc_astnode_declaration_spec($1); }
                 | CHAR      {}
                 | SHORT     {}
                 | INT       {}
@@ -631,7 +631,7 @@ labeled_statement   : IDENT ':' statement
                     ;
 
 compound_statement  : '{' block_item_list '}'   {
-                        $$ = alloc_astnode_compound_statement();
+                        //$$ = alloc_astnode_compound_statement();
                     }
                     | '{' '}'                   { $$ = NULL; }
                     ;
