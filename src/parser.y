@@ -99,13 +99,10 @@
                     declarator
                     direct_declarator
                     pointer
-                    type_qualifier_list_opt
                     type_qualifier_list
-                    parameter_type_list_opt
                     parameter_type_list
                     parameter_list
                     parameter_declaration
-                    identifier_list_opt
                     identifier_list
                     /* type_name */
                     abstract_declarator
@@ -531,29 +528,32 @@ declarator  : pointer direct_declarator { append_astnode($1, $2); }
 
 direct_declarator   : IDENT
                     | '{' declarator '}'
-                    | direct_declarator '[' type_qualifier_list_opt assignment_expr_opt ']'
-                    | direct_declarator '[' STATIC type_qualifier_list_opt assignment_expr ']'
+                    | direct_declarator '[' type_qualifier_list assignment_expr ']'
+                    | direct_declarator '[' type_qualifier_list  ']'
+                    | direct_declarator '[' assignment_expr ']'
+                    | direct_declarator '[' ']'
+
+                    | direct_declarator '[' STATIC type_qualifier_list assignment_expr ']'
+                    | direct_declarator '[' STATIC assignment_expr ']'
+
                     | direct_declarator '[' type_qualifier_list STATIC assignment_expr ']'
-                    | direct_declarator '[' type_qualifier_list_opt '*' ']'
+                    | direct_declarator '[' type_qualifier_list '*' ']'
+                    | direct_declarator '[' '*' ']'
+
                     | direct_declarator '(' parameter_type_list ')'
-                    | direct_declarator '(' identifier_list_opt ')'
+                    | direct_declarator '(' identifier_list ')'
+                    | direct_declarator '(' ')'
                     ;
 
-pointer : '*' type_qualifier_list_opt
-        | '*' type_qualifier_list_opt pointer
+pointer : '*' type_qualifier_list pointer   { $$ = NULL; }
+        | '*' type_qualifier_list           { $$ = NULL; }
+        | '*' pointer                       { $$ = NULL; }
+        | '*'                               { $$ = NULL; }
         ;
-
-type_qualifier_list_opt : type_qualifier_list
-                        | /* opt */
-                        ;
 
 type_qualifier_list : type_qualifier
                     | type_qualifier_list type_qualifier
                     ;
-
-parameter_type_list_opt : parameter_type_list
-                        | /* opt */
-                        ;
 
 parameter_type_list : parameter_list
                     | parameter_list ',' ELLIPSIS
@@ -567,10 +567,6 @@ parameter_declaration   : declaration_specifiers declarator
                         | declaration_specifiers abstract_declarator
                         | declaration_specifiers
                         ;
-
-identifier_list_opt : identifier_list
-                    | /* opt */
-                    ;
 
 identifier_list : IDENT
                 | identifier_list ',' IDENT
@@ -588,7 +584,8 @@ direct_abstract_declarator_opt  : direct_abstract_declarator
 direct_abstract_declarator  : '(' abstract_declarator ')'
                             | direct_abstract_declarator_opt '[' assignment_expr_opt ']'
                             | direct_abstract_declarator_opt '[' '*' ']'
-                            | direct_abstract_declarator_opt '(' parameter_type_list_opt ')'
+                            | direct_abstract_declarator_opt '(' parameter_type_list ')'
+                            | direct_abstract_declarator_opt '(' ')'
                             ;
 
 /*
