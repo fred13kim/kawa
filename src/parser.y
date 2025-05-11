@@ -89,7 +89,6 @@
 
 /* Declarations */
 %type <astnode_p>   declaration
-                    declaration_specifiers_opt
                     declaration_specifiers
                     init_declarator_list
                     init_declarator
@@ -451,22 +450,48 @@ declaration : declaration_specifiers init_declarator_list ';'   {
             }
             ;
 
-declaration_specifiers_opt  : declaration_specifiers    { $$ = $1; }
-                            | /* opt */                 { $$ = NULL; }
-                            ;
+declaration_specifiers  : storage_class_specifier declaration_specifiers    {
+                            $$ = append_astnode($2, $1);
+                        }
+                        | storage_class_specifier                           {
+                            $$ = alloc_astnode_ll_node($1);
+                            $$ = alloc_astnode_ll_list($$);
+                        }
+                        | type_specifier declaration_specifiers             {
+                            $$ = append_astnode($2, $1);
+                        }
+                        | type_specifier                                    {
+                            $$ = alloc_astnode_ll_node($1);
+                            $$ = alloc_astnode_ll_list($$);
+                        }
+                        | type_qualifier declaration_specifiers             {
+                            $$ = append_astnode($2, $1);
+                        }
+                        | type_qualifier                                    {
+                            $$ = alloc_astnode_ll_node($1);
+                            $$ = alloc_astnode_ll_list($$);
+                        }
+                        | function_specifier declaration_specifiers         {
+                            $$ = append_astnode($2, $1);
 
-declaration_specifiers  : storage_class_specifier declaration_specifiers_opt {}
-                        | type_specifier declaration_specifiers_opt
-                        | type_qualifier declaration_specifiers_opt
-                        | function_specifier declaration_specifiers_opt
+                        }
+                        | function_specifier                                {
+                            $$ = alloc_astnode_ll_node($1);
+                            $$ = alloc_astnode_ll_list($$);
+                        }
                         ;
 
-init_declarator_list: init_declarator
-                    | init_declarator_list ',' init_declarator
+init_declarator_list: init_declarator                           {
+                        $$ = alloc_astnode_ll_node($1);
+                        $$ = alloc_astnode_ll_list($$);
+                    }
+                    | init_declarator_list ',' init_declarator  {
+                        $$ = append_astnode($1, $3);
+                    }
                     ;
 
-init_declarator : declarator
-                //| declarator '=' initializer
+init_declarator : declarator                    { $$ = $1; }
+                | declarator '=' initializer    { }
                 ;
 
 storage_class_specifier : TYPEDEF
@@ -476,17 +501,17 @@ storage_class_specifier : TYPEDEF
                         | REGISTER  {}
                         ;
 
-type_specifier  : VOID
-                | CHAR
-                | SHORT
-                | INT
-                | LONG
-                | FLOAT
-                | DOUBLE
-                | SIGNED
-                | UNSIGNED
-                | _BOOL
-                | _COMPLEX
+type_specifier  : VOID      {}
+                | CHAR      {}
+                | SHORT     {}
+                | INT       {}
+                | LONG      {}
+                | FLOAT     {}
+                | DOUBLE    {}
+                | SIGNED    {}
+                | UNSIGNED  {}
+                | _BOOL     {}
+                | _COMPLEX  {}
                 //| struct_or_union_specifier   i fear
                 //| enum_specifier              i am
                 //| typedef_name                joever & cooked
