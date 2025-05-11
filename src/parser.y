@@ -115,9 +115,9 @@
                     /* typedef_name */
                     /* initializer  */
                     /* initializer_list */
-                    designation
-                    designator_list
-                    designator
+                    /* designation */
+                    /* designator_list  */
+                    /* designator */
 
 /* Statements */
 %type <astnode_p>   statement
@@ -178,12 +178,12 @@ external_declaration: function_definition
 function_definition : declaration_specifiers declarator declaration_list_opt compound_statement
                     ;
 
-declaration_list_opt: declaration_list
-                    | /* opt */
+declaration_list_opt: declaration_list  { $$ = $1; }
+                    | /* opt */         { $$ = NULL; }
                     ;
 
-declaration_list: declaration
-                | declaration_list declaration
+declaration_list: declaration                   {}
+                | declaration_list declaration  { /* APPEND SHIT */ }
                 ;
 
 /* A.2.1 Expressions */
@@ -443,18 +443,23 @@ constant_expr   : conditional_expr  { $$ = $1; }
 
 /* A.2.2 Declarations */
 
-declaration : declaration_specifiers init_declarator_list ';'
-            | declaration_specifiers ';'
+declaration : declaration_specifiers init_declarator_list ';'   {
+                $$ = alloc_astnode_declaration($1, $2);
+            }
+            | declaration_specifiers ';'                        {
+                $$ = alloc_astnode_declaration($1, NULL); 
+            }
             ;
 
-declaration_specifiers_opt  : declaration_specifiers
-                            | /* opt */
-                            ;
 
-declaration_specifiers  : storage_class_specifier declaration_specifiers_opt
-                        | type_specifier declaration_specifiers_opt
-                        | type_qualifier declaration_specifiers_opt
-                        | function_specifier declaration_specifiers_opt
+declaration_specifiers  : storage_class_specifier declaration_specifiers    {}
+                        | storage_class_specifier                           { $$ = $1; }
+                        | type_specifier declaration_specifiers
+                        | type_specifier
+                        | type_qualifier declaration_specifiers
+                        | type_qualifer
+                        | function_specifier declaration_specifiers
+                        | function_specifier
                         ;
 
 init_declarator_list: init_declarator
@@ -573,7 +578,6 @@ initializer_list: designation initializer
                 | initializer_list ',' designation initializer
                 | initializer_list ',' initializer
                 ;
-*/
 
 designation : designator_list '='
             ;
@@ -585,6 +589,8 @@ designator_list : designator
 designator  : '[' constant_expr ']'
             | '.' IDENT
             ;
+
+*/
 
 
 statement   : labeled_statement     { $$ = $1; }
@@ -600,16 +606,22 @@ labeled_statement   : IDENT ':' statement
                     | DEFAULT ':' statement
                     ;
 
-compound_statement  : '{' block_item_list '}'
-                    | '{' '}'
+compound_statement  : '{' block_item_list '}'   {
+                        $$ = alloc_astnode_compound_statement();
+                    }
+                    | '{' '}'                   { $$ = NULL; }
                     ;
 
-block_item_list : block_item_list block_item
-                | block_item
+block_item_list : block_item_list block_item    {
+                    // append
+                }
+                | block_item                    {
+                    // create_new list
+                }
                 ;
 
-block_item  : declaration
-            | statement
+block_item  : declaration   { $$ = $1; }
+            | statement     { $$ = $1; }
             ;
 
 expr_statement  : expr_opt ';'  { $$ = $1; }

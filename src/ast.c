@@ -116,6 +116,20 @@ astnode_t *alloc_astnode_string(string_t string) {
     return astnode;
 }
 
+astnode_t *alloc_astnode_declaration(astnode_t *declaration_specifier_list, astnode_t *init_declarator_list) {
+    astnode_t *astnode = alloc_astnode(AST_DECLARATION);
+    astnode->declaration.declaration_specifier_list = declaration_specifier_list;
+    astnode->declaration.init_declarator_list = init_declarator_list;
+    return astnode;
+}
+
+astnode_t *alloc_astnode_compound_statement() {
+}
+
+
+
+
+
 void print_indent(int num) {
     for(int i = 0; i < num; i++) {
         fprintf(stdout, " ");
