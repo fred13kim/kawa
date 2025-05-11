@@ -57,31 +57,31 @@ astnode_t *alloc_astnode_fncall(astnode_t *name, astnode_t *args) {
     return astnode;
 }
 
-astnode_t *alloc_astnode_arg_list(astnode_t *head) {
-    astnode_t *astnode = alloc_astnode(AST_ARG_LIST);
-    astnode->arg_list.head = head;
-    astnode->arg_list.tail = head;
-    astnode->arg_list.size = 1;
+astnode_t *alloc_astnode_ll_list(astnode_t *head) {
+    astnode_t *astnode = alloc_astnode(AST_LL_LIST);
+    astnode->ll_list.head = head;
+    astnode->ll_list.tail = head;
+    astnode->ll_list.size = 1;
     return astnode;
 }
 
-astnode_t *alloc_astnode_arg_node(astnode_t *arg) {
-    astnode_t *astnode = alloc_astnode(AST_ARG_NODE);
-    astnode->arg_node.arg = arg;
-    astnode->arg_node.next = NULL;
+astnode_t *alloc_astnode_ll_node(astnode_t *node) {
+    astnode_t *astnode = alloc_astnode(AST_LL_NODE);
+    astnode->ll_node.node = node;
+    astnode->ll_node.next = NULL;
     return astnode;
 }
 
 astnode_t *append_astnode(astnode_t *list, astnode_t *node) {
-    astnode_t *astnode = alloc_astnode_arg_node(node);
-    if (!(list->arg_list.tail)) {
-        list->arg_list.head = astnode;
+    astnode_t *astnode = alloc_astnode_ll_node(node);
+    if (!(list->ll_list.tail)) {
+        list->ll_list.head = astnode;
     }
     else {
-        (list->arg_list.tail)->arg_node.next = astnode;
+        (list->ll_list.tail)->ll_node.next = astnode;
     }
-    list->arg_list.tail = astnode;
-    list->arg_list.size++;
+    list->ll_list.tail = astnode;
+    list->ll_list.size++;
 
     return list;
 };
@@ -242,15 +242,15 @@ void print_ast(astnode_t *astnode) {
                 space++; print_ast(astnode->fncall.name); space--;
             }
             else {
-                fprintf(stdout, "FNCALL, %d arguments\n", astnode->fncall.args->arg_list.size);
+                fprintf(stdout, "FNCALL, %d arguments\n", astnode->fncall.args->ll_list.size);
                 space++; print_ast(astnode->fncall.name); space--;
-                astnode_t *cur = astnode->fncall.args->arg_list.head;
+                astnode_t *cur = astnode->fncall.args->ll_list.head;
                 int count = 1;
                 while(cur) {
                     print_indent(space);
                     fprintf(stdout, "arg #%d=\n", count++);
-                    space++; print_ast(cur->arg_node.arg); space--;
-                    cur = cur->arg_node.next;
+                    space++; print_ast(cur->ll_node.node); space--;
+                    cur = cur->ll_node.next;
                 }
 
             }

@@ -241,8 +241,8 @@ function_call   : postfix_expr '(' expr_list ')'    {
                 ;
 
 expr_list   : assignment_expr               {
-                $$ = alloc_astnode_arg_node($1);
-                $$ = alloc_astnode_arg_list($$);
+                $$ = alloc_astnode_ll_node($1);
+                $$ = alloc_astnode_ll_list($$);
             }
             | expr_list ',' assignment_expr { $$ = append_astnode($1, $3); }
             ;
@@ -451,15 +451,14 @@ declaration : declaration_specifiers init_declarator_list ';'   {
             }
             ;
 
+declaration_specifiers_opt  : declaration_specifiers    { $$ = $1; }
+                            | /* opt */                 { $$ = NULL; }
+                            ;
 
-declaration_specifiers  : storage_class_specifier declaration_specifiers    {}
-                        | storage_class_specifier                           { $$ = $1; }
-                        | type_specifier declaration_specifiers
-                        | type_specifier
-                        | type_qualifier declaration_specifiers
-                        | type_qualifer
-                        | function_specifier declaration_specifiers
-                        | function_specifier
+declaration_specifiers  : storage_class_specifier declaration_specifiers_opt {}
+                        | type_specifier declaration_specifiers_opt
+                        | type_qualifier declaration_specifiers_opt
+                        | function_specifier declaration_specifiers_opt
                         ;
 
 init_declarator_list: init_declarator
