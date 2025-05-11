@@ -23,6 +23,7 @@ add_executable(
     parsertester.c
     ast.c
     symtable.c
+    printer.c
     ${BISON_parser_OUTPUTS}
     ${FLEX_lexer_OUTPUTS}
 )

@@ -15,6 +15,9 @@ void symtable_destroy(symtable_t *table);
 symtable_entry_t *lookup(symtable_t *table, symtable_entry_t *entry);
 bool enter(symtable_t *table, symtable_entry_t *entry);
 
+void symtable_declaration();
+void symtable_func_def();
+
 struct attr_variable_s {
     astnode_t *type;
     int storage_class;

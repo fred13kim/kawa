@@ -89,6 +89,13 @@ bool enter(symtable_t *table, symtable_entry_t *entry) {
     return true;
 }
 
+void symtable_declaration() {
+
+}
+void symtable_func_def() {
+
+}
+
 
 
 

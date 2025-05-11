@@ -43,7 +43,6 @@
 %type <astnode_p>   translation_unit
                     external_declaration
                     function_definition
-                    declaration_list_opt
                     declaration_list
 
 /* Expressions */
@@ -80,7 +79,6 @@
                     logical_or_expr
                     logical_and_expr
                     conditional_expr
-                    assignment_expr_opt
                     assignment_expr
                     comma_expr
                     expr_opt
@@ -106,7 +104,6 @@
                     identifier_list
                     /* type_name */
                     abstract_declarator
-                    direct_abstract_declarator_opt
                     direct_abstract_declarator
                     /* typedef_name */
                     /* initializer  */
@@ -163,19 +160,16 @@
 
 /* A.2.4 External Definitions */
 
-translation_unit: external_declaration
+translation_unit: external_declaration 
                 | translation_unit external_declaration
                 ;
 
-external_declaration: function_definition
-                    | declaration
+external_declaration: function_definition   { symtable_func_def(); }
+                    | declaration           { symtable_declaration(); }
                     ;
 
-function_definition : declaration_specifiers declarator declaration_list_opt compound_statement
-                    ;
-
-declaration_list_opt: declaration_list  { $$ = $1; }
-                    | /* opt */         { $$ = NULL; }
+function_definition : declaration_specifiers declarator declaration_list compound_statement
+                    | declaration_specifiers declarator compound_statement
                     ;
 
 declaration_list: declaration                   {}
@@ -398,10 +392,6 @@ conditional_expr: logical_or_expr                               { $$ = $1; }
                 }
                 ;
 
-assignment_expr_opt : assignment_expr   { $$ = $1; }
-                    | /* opt */         { $$ = NULL; }
-                    ;
-
 assignment_expr : conditional_expr                          { $$ = $1; }
                 | unary_expr assignment_op assignment_expr  {
                      $$ = alloc_astnode_binary($2, $1, $3);
@@ -488,7 +478,6 @@ init_declarator_list: init_declarator                           {
                     ;
 
 init_declarator : declarator                    { $$ = $1; }
-                //| declarator '=' initializer    { }
                 ;
 
 storage_class_specifier : TYPEDEF   { $$ = alloc_astnode_declaration_spec($1); }
@@ -509,11 +498,12 @@ type_specifier  : VOID      { $$ = alloc_astnode_declaration_spec($1); }
                 | UNSIGNED  { $$ = alloc_astnode_declaration_spec($1); }
                 | _BOOL     { $$ = alloc_astnode_declaration_spec($1); }
                 | _COMPLEX  { $$ = alloc_astnode_declaration_spec($1); }
-                //| struct_or_union_specifier   i fear
+                //| struct_or_union_specifier
                 //| enum_specifier              i am
                 //| typedef_name                joever & cooked
                 ;
 
+/* not handling type qualifiers & inline functions but supported in grammar */
 type_qualifier  : CONST     { $$ = alloc_astnode_declaration_spec($1); }
                 | RESTRICT  { $$ = alloc_astnode_declaration_spec($1); }
                 | VOLATILE  { $$ = alloc_astnode_declaration_spec($1); }
@@ -522,37 +512,88 @@ type_qualifier  : CONST     { $$ = alloc_astnode_declaration_spec($1); }
 function_specifier  : INLINE    { $$ = alloc_astnode_declaration_spec($1); }   
                     ;
 
-declarator  : pointer direct_declarator { append_astnode($1, $2); }
+
+declarator  : pointer direct_declarator { append_astlist($1, $2); }
             | direct_declarator         { $$ = $1; }
             ;
 
-direct_declarator   : IDENT
-                    | '{' declarator '}'
-                    | direct_declarator '[' type_qualifier_list assignment_expr ']'
-                    | direct_declarator '[' type_qualifier_list  ']'
-                    | direct_declarator '[' assignment_expr ']'
-                    | direct_declarator '[' ']'
+direct_declarator   : IDENT                 {
+                        $$ = alloc_astnode_ident($1);
+                        $$ = alloc_astnode_ll_node($$);
+                        $$ = alloc_astnode_ll_list($$);
+                    }
+                    | '(' declarator ')'    { $$ = $2; }
+                    | direct_declarator '[' type_qualifier_list assignment_expr ']'     {
+                        $$ = alloc_astnode_array($4);
+                        $$ = append_astnode($1, $$);
+                    }
+                    | direct_declarator '[' type_qualifier_list  ']'                    {
+                        yyerror("Not handling variable-length arrays");
+                    }
+                    | direct_declarator '[' assignment_expr ']'                         {
+                        $$ = alloc_astnode_array($3);
+                        $$ = append_astnode($1, $$);
+                    }
+                    | direct_declarator '[' ']'                                         {
+                        yyerror("Not handling variable-length arrays");
+                    }
 
-                    | direct_declarator '[' STATIC type_qualifier_list assignment_expr ']'
-                    | direct_declarator '[' STATIC assignment_expr ']'
+                    // will not handle static
+                    | direct_declarator '[' STATIC type_qualifier_list assignment_expr ']'  {
+                        $$ = alloc_astnode_array($5);
+                        $$ = append_astnode($1, $$);
+                    }
+                    | direct_declarator '[' STATIC assignment_expr ']'                      {
+                        $$ = alloc_astnode_array($4);
+                        $$ = append_astnode($1, $$);
+                    }
 
-                    | direct_declarator '[' type_qualifier_list STATIC assignment_expr ']'
-                    | direct_declarator '[' type_qualifier_list '*' ']'
-                    | direct_declarator '[' '*' ']'
+                    | direct_declarator '[' type_qualifier_list STATIC assignment_expr ']'  {
+                        $$ = alloc_astnode_array($5);
+                        $$ = append_astnode($1, $$);
+                    }
+                    | direct_declarator '[' type_qualifier_list '*' ']'     {
+                        yyerror("Not handling variable-length arrays");
+                    }
+                    | direct_declarator '[' '*' ']'                         {
+                        yyerror("Not handling variable-length arrays");
+                    }
+                    | direct_declarator '(' parameter_type_list ')'         {
 
-                    | direct_declarator '(' parameter_type_list ')'
-                    | direct_declarator '(' identifier_list ')'
-                    | direct_declarator '(' ')'
+                    }
+                    | direct_declarator '(' identifier_list ')'             {
+
+                    }
+                    | direct_declarator '(' ')'                             {
+                        yyerror("Not handling ancient K&R function defs");
+                    }
                     ;
 
-pointer : '*' type_qualifier_list pointer   { $$ = NULL; }
-        | '*' type_qualifier_list           { $$ = NULL; }
-        | '*' pointer                       { $$ = NULL; }
-        | '*'                               { $$ = NULL; }
+pointer : '*' type_qualifier_list           {
+            $$ = alloc_astnode_ptr();
+            $$ = alloc_astnode_ll_list($$);
+        }
+        | '*' /* opt */                     {
+            $$ = alloc_astnode_ptr();
+            $$ = alloc_astnode_ll_list($$);
+        }
+        | '*' type_qualifier_list pointer   {
+            $$ = alloc_astnode_ptr();
+            $$ = append_astnode_ll_node($3, $$);
+        }
+        | '*' pointer                       {
+            $$ = alloc_astnode_ptr();
+            $$ = append_astnode_ll_node($2, $$);
+        }
         ;
 
-type_qualifier_list : type_qualifier
-                    | type_qualifier_list type_qualifier
+type_qualifier_list : type_qualifier                        {
+                        $$ = alloc_astnode_ll_node($1);
+                        $$ = alloc_astnode_ll_list($$);
+                    }
+                    | type_qualifier_list type_qualifier    {
+                        $$ = append_astnode($2, $1);
+                    }
                     ;
 
 parameter_type_list : parameter_list
@@ -568,8 +609,15 @@ parameter_declaration   : declaration_specifiers declarator
                         | declaration_specifiers
                         ;
 
-identifier_list : IDENT
-                | identifier_list ',' IDENT
+identifier_list : IDENT                     {
+                    $$ = alloc_astnode_ident($1);
+                    $$ = alloc_astnode_ll_node($$);
+                    $$ = alloc_astnode_ll_list($$);
+                }
+                | identifier_list ',' IDENT {
+                    $$ = alloc_astnode_ident($3);
+                    $$ = append_astnode($1, $$);
+                }
                 ;
 
 abstract_declarator : pointer
@@ -577,49 +625,32 @@ abstract_declarator : pointer
                     | direct_abstract_declarator
                     ;
 
-direct_abstract_declarator_opt  : direct_abstract_declarator
-                                | /* opt */
-                                ;
 
 direct_abstract_declarator  : '(' abstract_declarator ')'
-                            | direct_abstract_declarator_opt '[' assignment_expr_opt ']'
-                            | direct_abstract_declarator_opt '[' '*' ']'
-                            | direct_abstract_declarator_opt '(' parameter_type_list ')'
-                            | direct_abstract_declarator_opt '(' ')'
+                            | direct_abstract_declarator '[' assignment_expr ']'
+                            | direct_abstract_declarator '[' ']'
+                            | '[' assignment_expr ']'
+                            | '[' ']'
+                            | direct_abstract_declarator '[' '*' ']'
+                            | '[' '*' ']'
+                            | direct_abstract_declarator '(' parameter_type_list ')'
+                            | direct_abstract_declarator '(' ')'
+                            | '(' parameter_type_list ')'
+                            | '(' ')'
                             ;
 
 /*
-initializer : assignment_expr
-            | '{' initializer_list '}'
-            | '{' identifier_list ',' '}'
-            ;
-
-initializer_list: designation initializer
-                | initializer
-                | initializer_list ',' designation initializer
-                | initializer_list ',' initializer
-                ;
-
-designation : designator_list '='
-            ;
-
-designator_list : designator
-                | designator_list designator
-                ;
-
-designator  : '[' constant_expr ']'
-            | '.' IDENT
-            ;
-
-*/
-
-
 statement   : labeled_statement     { $$ = $1; }
             | compound_statement    { $$ = $1; }
             | expr_statement        { $$ = $1; }
             | selection_statement   { $$ = $1; }
             | iteration_statement   { $$ = $1; }
             | jump_statement        { $$ = $1; }
+            ;
+*/
+
+statement   : compound_statement    { $$ = $1; }
+            | expr_statement        { $$ = $1; }
             ;
 
 labeled_statement   : IDENT ':' statement
