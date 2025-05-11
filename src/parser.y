@@ -517,9 +517,9 @@ type_specifier  : VOID      { $$ = alloc_astnode_declaration_spec($1); }
                 //| typedef_name                joever & cooked
                 ;
 
-type_qualifier  : CONST
-                | RESTRICT
-                | VOLATILE
+type_qualifier  : CONST     { $$ = alloc_astnode_declaration_spec($1); }
+                | RESTRICT  { $$ = alloc_astnode_declaration_spec($1); }
+                | VOLATILE  { $$ = alloc_astnode_declaration_spec($1); }
                 ;
 
 function_specifier  : INLINE
