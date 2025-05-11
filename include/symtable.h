@@ -9,6 +9,13 @@ typedef struct symtable_entry_node_s symtable_entry_node_t;
 typedef struct symtable_entry_list_s symtable_entry_list_t;
 typedef struct symtable_s symtable_t;
 
+enum SCOPES {
+    SCOPE_FILE = 0,
+    SCOPE_BLOCK,
+    SCOPE_FUNC,
+    SCOPE_PROTO,
+};
+
 
 symtable_t *symtable_create(int scope);
 void symtable_destroy(symtable_t *table);
