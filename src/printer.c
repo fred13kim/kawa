@@ -130,6 +130,18 @@ void print_ast(astnode_t *astnode) {
 
             }
             break;
+        case AST_LL_LIST:
+            fprintf(stdout,"LIST:\n");
+            astnode_t *cur = astnode->ll_list.head;
+            int count = 1;
+            while(cur) {
+                space++;
+                print_ast(cur->ll_node.node);
+                space--;
+                cur = cur->ll_node.next;
+            }
+            break;
+
         case AST_SIZEOF:
             fprintf(stdout,"SIZEOF\n");
             space++; print_ast(astnode->_sizeof.expr); space--;
@@ -149,6 +161,21 @@ void print_ast(astnode_t *astnode) {
         case AST_STRING:
             fprintf(stdout, "STRING\t%s\n", astnode->str.str.string_literal);
             break;
+
+        case AST_DECLARATION:
+            fprintf(stdout, "DECLARATION\n");
+            space++;
+            print_indent(space); fprintf(stdout, "SPECIFIERS:\n");
+            space++; print_ast(astnode->declaration.declaration_spec_list); space--;
+            print_indent(space); fprintf(stdout, "DECLARATORS:\n");
+            space++; print_ast(astnode->declaration.init_declarator_list); space--;
+            space--;
+            break;
+
+        case AST_DECLARATION_SPEC:
+            fprintf(stdout, "DECLARATION SPECIFIER %d\n", astnode->declaration_spec.spec);
+            break;
+
         default:
             break;
     }

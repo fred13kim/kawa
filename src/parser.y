@@ -1,13 +1,18 @@
 %{
     #include <stdio.h>
     #include <stdlib.h>
+    #include "ast.h"
+    #include "symtable.h"
 
     extern int yylex(void);
     void yyerror(char const *);
+
+    extern symtable_t *table;
 %}
 
 %code requires {
     #include "ast.h"
+    #include "symtable.h"
     #include "parser_defs.h"
 }
 
@@ -165,7 +170,7 @@ translation_unit: external_declaration
                 ;
 
 external_declaration: function_definition   { symtable_func_def(); }
-                    | declaration           { symtable_declaration(); }
+                    | declaration           { symtable_declaration($1, table); }
                     ;
 
 function_definition : declaration_specifiers declarator declaration_list compound_statement
@@ -433,7 +438,7 @@ declaration : declaration_specifiers init_declarator_list ';'   {
                 $$ = alloc_astnode_declaration($1, $2);
             }
             | declaration_specifiers ';'                        {
-                $$ = alloc_astnode_declaration($1, NULL); 
+                $$ = alloc_astnode_declaration($1, NULL);
             }
             ;
 
@@ -468,48 +473,43 @@ declaration_specifiers  : storage_class_specifier declaration_specifiers    {
                         }
                         ;
 
-init_declarator_list: init_declarator                           {
-                        $$ = alloc_astnode_ll_node($1);
-                        $$ = alloc_astnode_ll_list($$);
-                    }
-                    | init_declarator_list ',' init_declarator  {
-                        $$ = append_astnode($1, $3);
-                    }
+init_declarator_list: init_declarator                           { $$ = $1; }
+                    | init_declarator_list ',' init_declarator  { $$ = append_astlist($1, $3); }
                     ;
 
-init_declarator : declarator                    { $$ = $1; }
+init_declarator : declarator    { $$ = $1; }
                 ;
 
-storage_class_specifier : TYPEDEF   { $$ = alloc_astnode_declaration_spec($1); }
-                        | EXTERN    { $$ = alloc_astnode_declaration_spec($1); }
-                        | STATIC    { $$ = alloc_astnode_declaration_spec($1); }
-                        | AUTO      { $$ = alloc_astnode_declaration_spec($1); }
-                        | REGISTER  { $$ = alloc_astnode_declaration_spec($1); }
+storage_class_specifier : TYPEDEF   { $$ = alloc_astnode_declaration_spec(SPEC_STORAGE, STORAGE_TYPEDEF); }
+                        | EXTERN    { $$ = alloc_astnode_declaration_spec(SPEC_STORAGE, STORAGE_EXTERN); }
+                        | STATIC    { $$ = alloc_astnode_declaration_spec(SPEC_STORAGE, STORAGE_STATIC); }
+                        | AUTO      { $$ = alloc_astnode_declaration_spec(SPEC_STORAGE, STORAGE_AUTO); }
+                        | REGISTER  { $$ = alloc_astnode_declaration_spec(SPEC_STORAGE, STORAGE_REGISTER); }
                         ;
 
-type_specifier  : VOID      { $$ = alloc_astnode_declaration_spec($1); }
-                | CHAR      { $$ = alloc_astnode_declaration_spec($1); }
-                | SHORT     { $$ = alloc_astnode_declaration_spec($1); }
-                | INT       { $$ = alloc_astnode_declaration_spec($1); }
-                | LONG      { $$ = alloc_astnode_declaration_spec($1); }
-                | FLOAT     { $$ = alloc_astnode_declaration_spec($1); }
-                | DOUBLE    { $$ = alloc_astnode_declaration_spec($1); }
-                | SIGNED    { $$ = alloc_astnode_declaration_spec($1); }
-                | UNSIGNED  { $$ = alloc_astnode_declaration_spec($1); }
-                | _BOOL     { $$ = alloc_astnode_declaration_spec($1); }
-                | _COMPLEX  { $$ = alloc_astnode_declaration_spec($1); }
+type_specifier  : VOID      { $$ = alloc_astnode_declaration_spec(SPEC_TYPE, TYPE_VOID); }
+                | CHAR      { $$ = alloc_astnode_declaration_spec(SPEC_TYPE, TYPE_CHAR); }
+                | SHORT     { $$ = alloc_astnode_declaration_spec(SPEC_TYPE, TYPE_SHORT); }
+                | INT       { $$ = alloc_astnode_declaration_spec(SPEC_TYPE, TYPE_INT); }
+                | LONG      { $$ = alloc_astnode_declaration_spec(SPEC_TYPE, TYPE_LONG); }
+                | FLOAT     { $$ = alloc_astnode_declaration_spec(SPEC_TYPE, TYPE_FLOAT); }
+                | DOUBLE    { $$ = alloc_astnode_declaration_spec(SPEC_TYPE, TYPE_DOUBLE); }
+                | SIGNED    { $$ = alloc_astnode_declaration_spec(SPEC_TYPE, TYPE_SIGNED); }
+                | UNSIGNED  { $$ = alloc_astnode_declaration_spec(SPEC_TYPE, TYPE_UNSIGNED); }
+                | _BOOL     { $$ = alloc_astnode_declaration_spec(SPEC_TYPE, TYPE__BOOL); }
+                | _COMPLEX  { $$ = alloc_astnode_declaration_spec(SPEC_TYPE, TYPE__COMPLEX); }
                 //| struct_or_union_specifier
                 //| enum_specifier              i am
                 //| typedef_name                joever & cooked
                 ;
 
 /* not handling type qualifiers & inline functions but supported in grammar */
-type_qualifier  : CONST     { $$ = alloc_astnode_declaration_spec($1); }
-                | RESTRICT  { $$ = alloc_astnode_declaration_spec($1); }
-                | VOLATILE  { $$ = alloc_astnode_declaration_spec($1); }
+type_qualifier  : CONST     { $$ = alloc_astnode_declaration_spec(QUAL_TYPE, TYPE_CONST); }
+                | RESTRICT  { $$ = alloc_astnode_declaration_spec(QUAL_TYPE, TYPE_RESTRICT); }
+                | VOLATILE  { $$ = alloc_astnode_declaration_spec(QUAL_TYPE, TYPE_VOLATILE); }
                 ;
 
-function_specifier  : INLINE    { $$ = alloc_astnode_declaration_spec($1); }   
+function_specifier  : INLINE    { $$ = alloc_astnode_declaration_spec(SPEC_FUNC, FUNC_INLINE); }   
                     ;
 
 

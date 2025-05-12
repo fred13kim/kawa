@@ -7,5 +7,7 @@ project(Kawac
 
 set(CMAKE_C_STANDARD 11)
 
+set(CMAKE_BUILD_TYPE Debug CACHE STRING "" FORCE)
+
 add_subdirectory(src)
 

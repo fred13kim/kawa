@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "symtable.h"
+#include "printer.h"
 
 symtable_t *symtable_create(int scope) {
     symtable_t *table = malloc(sizeof(symtable_t));
@@ -89,8 +90,11 @@ bool enter(symtable_t *table, symtable_entry_t *entry) {
     return true;
 }
 
-void symtable_declaration() {
-
+void symtable_declaration(astnode_t *declaration, symtable_t *table) {
+    astnode_t *declaration_spec_list = declaration->declaration.declaration_spec_list;
+    astnode_t *init_declarator_list = declaration->declaration.init_declarator_list;
+    char *name;
+    print_ast(declaration);
 }
 void symtable_func_def() {
 

@@ -16,13 +16,45 @@ enum SCOPES {
     SCOPE_PROTO,
 };
 
+enum STORAGE_CLASS_SPECIFIER {
+    STORAGE_TYPEDEF,
+    STORAGE_EXTERN,
+    STORAGE_STATIC,
+    STORAGE_AUTO,
+    STORAGE_REGISTER,
+};
+
+enum TYPE_SPECIFIER {
+    TYPE_VOID,
+    TYPE_CHAR,
+    TYPE_SHORT,
+    TYPE_INT,
+    TYPE_LONG,
+    TYPE_FLOAT,
+    TYPE_DOUBLE,
+    TYPE_SIGNED,
+    TYPE_UNSIGNED,
+    TYPE__BOOL,
+    TYPE__COMPLEX,
+};
+
+enum TYPE_QUALIFIER {
+    TYPE_CONST,
+    TYPE_RESTRICT,
+    TYPE_VOLATILE,
+};
+
+enum FUNCTION_SPECIFIER {
+    FUNC_INLINE
+};
+
 
 symtable_t *symtable_create(int scope);
 void symtable_destroy(symtable_t *table);
 symtable_entry_t *lookup(symtable_t *table, symtable_entry_t *entry);
 bool enter(symtable_t *table, symtable_entry_t *entry);
 
-void symtable_declaration();
+void symtable_declaration(astnode_t *declaration, symtable_t *table);
 void symtable_func_def();
 
 struct attr_variable_s {
