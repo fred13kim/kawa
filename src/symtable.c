@@ -93,8 +93,16 @@ bool enter(symtable_t *table, symtable_entry_t *entry) {
 void symtable_declaration(astnode_t *declaration, symtable_t *table) {
     astnode_t *declaration_spec_list = declaration->declaration.declaration_spec_list;
     astnode_t *init_declarator_list = declaration->declaration.init_declarator_list;
-    char *name;
     print_ast(declaration);
+    
+    astnode_t *cur = init_declarator_list->ll_list.head;
+    astnode_t *cur_node;
+    while(cur != NULL) {
+        cur_node = cur->ll_node.node;
+        if (cur_node->type == AST_IDENT) {
+        }
+        cur = cur->ll_node.next;
+    }
 }
 void symtable_func_def() {
 

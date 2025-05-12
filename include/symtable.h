@@ -9,22 +9,19 @@ typedef struct symtable_entry_node_s symtable_entry_node_t;
 typedef struct symtable_entry_list_s symtable_entry_list_t;
 typedef struct symtable_s symtable_t;
 
-enum SCOPES_ENUM {
-    SCOPE_FILE = 0,
+enum scopes_enum {
+    SCOPE_GLOBAL = 0,
     SCOPE_BLOCK,
     SCOPE_FUNC,
     SCOPE_PROTO,
 };
 
-enum STORAGE_CLASS_SPECIFIER_ENUM {
+enum specifier_enum {
     STORAGE_TYPEDEF,
     STORAGE_EXTERN,
     STORAGE_STATIC,
     STORAGE_AUTO,
     STORAGE_REGISTER,
-};
-
-enum TYPE_SPECIFIER_ENUM {
     TYPE_VOID,
     TYPE_CHAR,
     TYPE_SHORT,
@@ -36,15 +33,9 @@ enum TYPE_SPECIFIER_ENUM {
     TYPE_UNSIGNED,
     TYPE__BOOL,
     TYPE__COMPLEX,
-};
-
-enum TYPE_QUALIFIER_ENUM {
     TYPE_CONST,
     TYPE_RESTRICT,
     TYPE_VOLATILE,
-};
-
-enum FUNCTION_SPECIFIER_ENUM {
     FUNC_INLINE
 };
 

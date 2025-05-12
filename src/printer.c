@@ -173,10 +173,41 @@ void print_ast(astnode_t *astnode) {
             break;
 
         case AST_DECLARATION_SPEC:
-            fprintf(stdout, "DECLARATION SPECIFIER %d\n", astnode->declaration_spec.spec);
+            switch(astnode->declaration_spec.spec_type) {
+                case STORAGE_CLASS:     fprintf(stdout, "STORAGE CLASS: "); break;
+                case TYPE_SPECIFIER:    fprintf(stdout, "TYPE SPECIFIER: "); break;
+                case TYPE_QUALIFIER:    fprintf(stdout, "TYPE QUALIFIER: "); break;
+                case FUNC_SPECIFIER:    fprintf(stdout, "FUNC SPECIFIER: "); break;
+            }
+
+            switch(astnode->declaration_spec.spec) {
+                case STORAGE_TYPEDEF:   fprintf(stdout, "typedef"); break;
+                case STORAGE_EXTERN:    fprintf(stdout, "extern"); break;
+                case STORAGE_STATIC:    fprintf(stdout, "static"); break;
+                case STORAGE_AUTO:      fprintf(stdout, "auto"); break;
+                case STORAGE_REGISTER:  fprintf(stdout, "register"); break;
+                case TYPE_VOID:         fprintf(stdout, "void"); break;
+                case TYPE_CHAR:         fprintf(stdout, "char"); break;
+                case TYPE_SHORT:        fprintf(stdout, "short"); break;
+                case TYPE_INT:          fprintf(stdout, "int"); break;
+                case TYPE_LONG:         fprintf(stdout, "long"); break;
+                case TYPE_FLOAT:        fprintf(stdout, "float"); break;
+                case TYPE_DOUBLE:       fprintf(stdout, "double"); break;
+                case TYPE_SIGNED:       fprintf(stdout, "signed"); break;
+                case TYPE_UNSIGNED:     fprintf(stdout, "unsigned"); break;
+                case TYPE__BOOL:        fprintf(stdout, "bool"); break;
+                case TYPE__COMPLEX:     fprintf(stdout, "complex"); break;
+                case TYPE_CONST:        fprintf(stdout, "const"); break;
+                case TYPE_RESTRICT:     fprintf(stdout, "restrict"); break;
+                case TYPE_VOLATILE:     fprintf(stdout, "volatile"); break;
+                case FUNC_INLINE:       fprintf(stdout, "inline"); break;
+            }
+            fprintf(stdout,"\n");
+
             break;
 
         case AST_PTR:
+            fprintf(stdout, "PTR\n");
             break;
         case AST_ARRAY:
             fprintf(stdout, "ARRAY\n");
@@ -186,5 +217,3 @@ void print_ast(astnode_t *astnode) {
             break;
     }
 }
-
-

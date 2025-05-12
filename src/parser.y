@@ -480,16 +480,11 @@ init_declarator_list: init_declarator                           { $$ = $1; }
 init_declarator : declarator    { $$ = $1; }
                 ;
 
-storage_class_specifier : TYPEDEF   { $$ =
-                        alloc_astnode_declaration_spec(STORAGE_CLASS, STORAGE_TYPEDEF); }
-                        | EXTERN    { $$ =
-                        alloc_astnode_declaration_spec(STORAGE_CLASS, STORAGE_EXTERN); }
-                        | STATIC    { $$ =
-                        alloc_astnode_declaration_spec(STORAGE_CLASS, STORAGE_STATIC); }
-                        | AUTO      { $$ =
-                        alloc_astnode_declaration_spec(STORAGE_CLASS, STORAGE_AUTO); }
-                        | REGISTER  { $$ =
-                        alloc_astnode_declaration_spec(STORAGE_CLASS, STORAGE_REGISTER); }
+storage_class_specifier : TYPEDEF   { $$ = alloc_astnode_declaration_spec(STORAGE_CLASS, STORAGE_TYPEDEF); }
+                        | EXTERN    { $$ = alloc_astnode_declaration_spec(STORAGE_CLASS, STORAGE_EXTERN); }
+                        | STATIC    { $$ = alloc_astnode_declaration_spec(STORAGE_CLASS, STORAGE_STATIC); }
+                        | AUTO      { $$ = alloc_astnode_declaration_spec(STORAGE_CLASS, STORAGE_AUTO); }
+                        | REGISTER  { $$ = alloc_astnode_declaration_spec(STORAGE_CLASS, STORAGE_REGISTER); }
                         ;
 
 type_specifier  : VOID      { $$ = alloc_astnode_declaration_spec(TYPE_SPECIFIER, TYPE_VOID); }
@@ -576,19 +571,21 @@ direct_declarator   : IDENT                 {
 
 pointer : '*' type_qualifier_list           {
             $$ = alloc_astnode_ptr();
+            $$ = alloc_astnode_ll_node($$);
             $$ = alloc_astnode_ll_list($$);
         }
         | '*' /* opt */                     {
             $$ = alloc_astnode_ptr();
+            $$ = alloc_astnode_ll_node($$);
             $$ = alloc_astnode_ll_list($$);
         }
         | '*' type_qualifier_list pointer   {
             $$ = alloc_astnode_ptr();
-            $$ = append_astnode_ll_node($3, $$);
+            $$ = append_astnode($3, $$);
         }
         | '*' pointer                       {
             $$ = alloc_astnode_ptr();
-            $$ = append_astnode_ll_node($2, $$);
+            $$ = append_astnode($2, $$);
         }
         ;
 

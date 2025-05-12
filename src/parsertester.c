@@ -6,6 +6,6 @@
 symtable_t *table;
 int main(void)
 {
-    table = symtable_create(SCOPE_FILE);
+    table = symtable_create(SCOPE_GLOBAL);
     yyparse();
 }
