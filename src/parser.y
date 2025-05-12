@@ -480,36 +480,41 @@ init_declarator_list: init_declarator                           { $$ = $1; }
 init_declarator : declarator    { $$ = $1; }
                 ;
 
-storage_class_specifier : TYPEDEF   { $$ = alloc_astnode_declaration_spec(SPEC_STORAGE, STORAGE_TYPEDEF); }
-                        | EXTERN    { $$ = alloc_astnode_declaration_spec(SPEC_STORAGE, STORAGE_EXTERN); }
-                        | STATIC    { $$ = alloc_astnode_declaration_spec(SPEC_STORAGE, STORAGE_STATIC); }
-                        | AUTO      { $$ = alloc_astnode_declaration_spec(SPEC_STORAGE, STORAGE_AUTO); }
-                        | REGISTER  { $$ = alloc_astnode_declaration_spec(SPEC_STORAGE, STORAGE_REGISTER); }
+storage_class_specifier : TYPEDEF   { $$ =
+                        alloc_astnode_declaration_spec(STORAGE_CLASS, STORAGE_TYPEDEF); }
+                        | EXTERN    { $$ =
+                        alloc_astnode_declaration_spec(STORAGE_CLASS, STORAGE_EXTERN); }
+                        | STATIC    { $$ =
+                        alloc_astnode_declaration_spec(STORAGE_CLASS, STORAGE_STATIC); }
+                        | AUTO      { $$ =
+                        alloc_astnode_declaration_spec(STORAGE_CLASS, STORAGE_AUTO); }
+                        | REGISTER  { $$ =
+                        alloc_astnode_declaration_spec(STORAGE_CLASS, STORAGE_REGISTER); }
                         ;
 
-type_specifier  : VOID      { $$ = alloc_astnode_declaration_spec(SPEC_TYPE, TYPE_VOID); }
-                | CHAR      { $$ = alloc_astnode_declaration_spec(SPEC_TYPE, TYPE_CHAR); }
-                | SHORT     { $$ = alloc_astnode_declaration_spec(SPEC_TYPE, TYPE_SHORT); }
-                | INT       { $$ = alloc_astnode_declaration_spec(SPEC_TYPE, TYPE_INT); }
-                | LONG      { $$ = alloc_astnode_declaration_spec(SPEC_TYPE, TYPE_LONG); }
-                | FLOAT     { $$ = alloc_astnode_declaration_spec(SPEC_TYPE, TYPE_FLOAT); }
-                | DOUBLE    { $$ = alloc_astnode_declaration_spec(SPEC_TYPE, TYPE_DOUBLE); }
-                | SIGNED    { $$ = alloc_astnode_declaration_spec(SPEC_TYPE, TYPE_SIGNED); }
-                | UNSIGNED  { $$ = alloc_astnode_declaration_spec(SPEC_TYPE, TYPE_UNSIGNED); }
-                | _BOOL     { $$ = alloc_astnode_declaration_spec(SPEC_TYPE, TYPE__BOOL); }
-                | _COMPLEX  { $$ = alloc_astnode_declaration_spec(SPEC_TYPE, TYPE__COMPLEX); }
+type_specifier  : VOID      { $$ = alloc_astnode_declaration_spec(TYPE_SPECIFIER, TYPE_VOID); }
+                | CHAR      { $$ = alloc_astnode_declaration_spec(TYPE_SPECIFIER, TYPE_CHAR); }
+                | SHORT     { $$ = alloc_astnode_declaration_spec(TYPE_SPECIFIER, TYPE_SHORT); }
+                | INT       { $$ = alloc_astnode_declaration_spec(TYPE_SPECIFIER, TYPE_INT); }
+                | LONG      { $$ = alloc_astnode_declaration_spec(TYPE_SPECIFIER, TYPE_LONG); }
+                | FLOAT     { $$ = alloc_astnode_declaration_spec(TYPE_SPECIFIER, TYPE_FLOAT); }
+                | DOUBLE    { $$ = alloc_astnode_declaration_spec(TYPE_SPECIFIER, TYPE_DOUBLE); }
+                | SIGNED    { $$ = alloc_astnode_declaration_spec(TYPE_SPECIFIER, TYPE_SIGNED); }
+                | UNSIGNED  { $$ = alloc_astnode_declaration_spec(TYPE_SPECIFIER, TYPE_UNSIGNED); }
+                | _BOOL     { $$ = alloc_astnode_declaration_spec(TYPE_SPECIFIER, TYPE__BOOL); }
+                | _COMPLEX  { $$ = alloc_astnode_declaration_spec(TYPE_SPECIFIER, TYPE__COMPLEX); }
                 //| struct_or_union_specifier
                 //| enum_specifier              i am
                 //| typedef_name                joever & cooked
                 ;
 
 /* not handling type qualifiers & inline functions but supported in grammar */
-type_qualifier  : CONST     { $$ = alloc_astnode_declaration_spec(QUAL_TYPE, TYPE_CONST); }
-                | RESTRICT  { $$ = alloc_astnode_declaration_spec(QUAL_TYPE, TYPE_RESTRICT); }
-                | VOLATILE  { $$ = alloc_astnode_declaration_spec(QUAL_TYPE, TYPE_VOLATILE); }
+type_qualifier  : CONST     { $$ = alloc_astnode_declaration_spec(TYPE_QUALIFIER, TYPE_CONST); }
+                | RESTRICT  { $$ = alloc_astnode_declaration_spec(TYPE_QUALIFIER, TYPE_RESTRICT); }
+                | VOLATILE  { $$ = alloc_astnode_declaration_spec(TYPE_QUALIFIER, TYPE_VOLATILE); }
                 ;
 
-function_specifier  : INLINE    { $$ = alloc_astnode_declaration_spec(SPEC_FUNC, FUNC_INLINE); }   
+function_specifier  : INLINE    { $$ = alloc_astnode_declaration_spec(FUNC_SPECIFIER, FUNC_INLINE); }   
                     ;
 
 

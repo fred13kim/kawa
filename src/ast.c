@@ -177,9 +177,8 @@ astnode_t *alloc_astnode_declaration(astnode_t *declaration_spec_list, astnode_t
     return astnode;
 }
 
-astnode_t *alloc_astnode_declaration_spec(int spec) {
+astnode_t *alloc_astnode_declaration_spec(int spec, int astnode_type) {
     astnode_t *astnode = alloc_astnode(AST_DECLARATION_SPEC);
-    printf("%d\n",spec);
     astnode->declaration_spec.spec = spec;
     return astnode;
 }

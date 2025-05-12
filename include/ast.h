@@ -28,7 +28,7 @@ astnode_t *alloc_astnode_number(number_t number);
 // astnode_t *alloc_astnode_charlit(char charlit);
 astnode_t *alloc_astnode_string(string_t string);
 astnode_t *alloc_astnode_declaration(astnode_t *declaration_spec_list, astnode_t *init_declarator_list);
-astnode_t *alloc_astnode_declaration_spec(int spec);
+astnode_t *alloc_astnode_declaration_spec(int spec, int spec_type);
 
 astnode_t *alloc_astnode_ptr(void);
 astnode_t *alloc_astnode_array(astnode_t *expr);
@@ -48,10 +48,19 @@ enum nodetype{
     AST_NUM,
     AST_CHARLIT,
     AST_STRING,
+
     AST_DECLARATION,
     AST_DECLARATION_SPEC,
+
     AST_PTR,
     AST_ARRAY,
+};
+
+enum declaration_specifiers {
+    STORAGE_CLASS,
+    TYPE_SPECIFIER,
+    TYPE_QUALIFIER,
+    FUNC_SPECIFIER,
 };
 
 struct astnode_unary_s {
@@ -118,7 +127,8 @@ struct astnode_declaration_s {
 };
 
 struct astnode_declaration_spec_s {
-    int spec;
+    int spec_type;  /* either STORAGE_CLASS, TYPE_SPECIFIER, TYPE_QUALIFIER, FUNC_SPECIFIER */
+    int spec;       /* the actual specifier itself ex. typedef (i am not going to implement this tho T_T )*/
 };
 
 struct astnode_ptr_s {

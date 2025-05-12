@@ -176,6 +176,12 @@ void print_ast(astnode_t *astnode) {
             fprintf(stdout, "DECLARATION SPECIFIER %d\n", astnode->declaration_spec.spec);
             break;
 
+        case AST_PTR:
+            break;
+        case AST_ARRAY:
+            fprintf(stdout, "ARRAY\n");
+            break;
+
         default:
             break;
     }
