@@ -9,6 +9,8 @@
 char buf[MAX_STR_CONST];
 char *buf_ptr;
 
+file_info_t file_info = { .filename = "<stdin>" };
+
 %}
 
     /* RULES */

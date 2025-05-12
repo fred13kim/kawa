@@ -48,6 +48,30 @@ void print_op(int op) {
     fprintf(stdout,"%s",s);
 }
 
+void print_symtable(symtable_t *table) {
+    switch(table->scope) {
+        case SCOPE_GLOBAL:  fprintf(stdout, "global scope\n"); break;
+        case SCOPE_BLOCK:   fprintf(stdout, "block scope\n"); break;
+        case SCOPE_FUNC:    fprintf(stdout, "func scope\n"); break;
+        case SCOPE_PROTO:   fprintf(stdout, "proto scope\n"); break;
+    }
+
+    symtable_entry_list_t *cur_list = table->list;
+    symtable_entry_node_t *cur_entry_node = cur_list->head;
+    while (cur_entry_node) {
+        fprintf(stdout, "entry name: %s\n", cur_entry_node->entry->name);
+        switch(cur_entry_node->entry->attr_type) {
+            case ATTR_VAR: 
+                fprintf(stdout, "type:\n");
+                print_ast(cur_entry_node->entry->variable.type);
+                fprintf(stdout, "\n");
+                break;
+            case ATTR_FUNC: break;
+        }
+        cur_entry_node = cur_entry_node->next;
+    }
+}
+
 static int space = 2;
 
 void print_ast(astnode_t *astnode) {
@@ -173,44 +197,40 @@ void print_ast(astnode_t *astnode) {
             break;
 
         case AST_DECLARATION_SPEC:
-            switch(astnode->declaration_spec.spec_type) {
-                case STORAGE_CLASS:     fprintf(stdout, "STORAGE CLASS: "); break;
-                case TYPE_SPECIFIER:    fprintf(stdout, "TYPE SPECIFIER: "); break;
-                case TYPE_QUALIFIER:    fprintf(stdout, "TYPE QUALIFIER: "); break;
-                case FUNC_SPECIFIER:    fprintf(stdout, "FUNC SPECIFIER: "); break;
-            }
-
             switch(astnode->declaration_spec.spec) {
-                case STORAGE_TYPEDEF:   fprintf(stdout, "typedef"); break;
-                case STORAGE_EXTERN:    fprintf(stdout, "extern"); break;
-                case STORAGE_STATIC:    fprintf(stdout, "static"); break;
-                case STORAGE_AUTO:      fprintf(stdout, "auto"); break;
-                case STORAGE_REGISTER:  fprintf(stdout, "register"); break;
-                case TYPE_VOID:         fprintf(stdout, "void"); break;
-                case TYPE_CHAR:         fprintf(stdout, "char"); break;
-                case TYPE_SHORT:        fprintf(stdout, "short"); break;
-                case TYPE_INT:          fprintf(stdout, "int"); break;
-                case TYPE_LONG:         fprintf(stdout, "long"); break;
-                case TYPE_FLOAT:        fprintf(stdout, "float"); break;
-                case TYPE_DOUBLE:       fprintf(stdout, "double"); break;
-                case TYPE_SIGNED:       fprintf(stdout, "signed"); break;
-                case TYPE_UNSIGNED:     fprintf(stdout, "unsigned"); break;
-                case TYPE__BOOL:        fprintf(stdout, "bool"); break;
-                case TYPE__COMPLEX:     fprintf(stdout, "complex"); break;
-                case TYPE_CONST:        fprintf(stdout, "const"); break;
-                case TYPE_RESTRICT:     fprintf(stdout, "restrict"); break;
-                case TYPE_VOLATILE:     fprintf(stdout, "volatile"); break;
-                case FUNC_INLINE:       fprintf(stdout, "inline"); break;
+                case STORAGE_TYPEDEF:   fprintf(stdout, "typedef "); break;
+                case STORAGE_EXTERN:    fprintf(stdout, "extern "); break;
+                case STORAGE_STATIC:    fprintf(stdout, "static "); break;
+                case STORAGE_AUTO:      fprintf(stdout, "auto "); break;
+                case STORAGE_REGISTER:  fprintf(stdout, "register "); break;
+                case TYPE_VOID:         fprintf(stdout, "void "); break;
+                case TYPE_CHAR:         fprintf(stdout, "char "); break;
+                case TYPE_SHORT:        fprintf(stdout, "short "); break;
+                case TYPE_INT:          fprintf(stdout, "int "); break;
+                case TYPE_LONG:         fprintf(stdout, "long "); break;
+                case TYPE_FLOAT:        fprintf(stdout, "float "); break;
+                case TYPE_DOUBLE:       fprintf(stdout, "double "); break;
+                case TYPE_SIGNED:       fprintf(stdout, "signed "); break;
+                case TYPE_UNSIGNED:     fprintf(stdout, "unsigned "); break;
+                case TYPE__BOOL:        fprintf(stdout, "bool "); break;
+                case TYPE__COMPLEX:     fprintf(stdout, "complex "); break;
+                case TYPE_CONST:        fprintf(stdout, "const "); break;
+                case TYPE_RESTRICT:     fprintf(stdout, "restrict "); break;
+                case TYPE_VOLATILE:     fprintf(stdout, "volatile "); break;
+                case FUNC_INLINE:       fprintf(stdout, "inline "); break;
             }
-            fprintf(stdout,"\n");
 
             break;
 
         case AST_PTR:
-            fprintf(stdout, "PTR\n");
+            fprintf(stdout, "PTR to\n");
             break;
         case AST_ARRAY:
-            fprintf(stdout, "ARRAY\n");
+            fprintf(stdout, "ARRAY SIZE:\n");
+            break;
+        case AST_FUNC:
+            fprintf(stdout, "FUNC\n");
+            print_ast(astnode->func.ret_type);
             break;
 
         default:

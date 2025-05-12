@@ -4,6 +4,20 @@
 #include "symtable.h"
 #include "printer.h"
 
+extern file_info_t file_info;
+extern void yyerror(char const *);
+
+symtable_entry_t *alloc_symtable_entry(char *name, int namespace, int type) {
+    symtable_entry_t *entry = malloc(sizeof(symtable_entry_t));
+    entry->name = name;
+    entry->namespace = namespace;
+    entry->attr_type = type;
+
+    entry->lineno = file_info.lineno;
+    entry->filename = strdup(file_info.filename);
+    return entry;
+}
+
 symtable_t *symtable_create(int scope) {
     symtable_t *table = malloc(sizeof(symtable_t));
     table->scope = scope;
@@ -28,7 +42,7 @@ bool symtable_compare_entry(symtable_entry_t *entry1, symtable_entry_t *entry2) 
 /*
  * in our current scope, let's check if the entry is in the list
  */
-symtable_entry_t *lookup(symtable_t *table, symtable_entry_t *entry) {
+symtable_entry_t *symtable_lookup(symtable_t *table, symtable_entry_t *entry) {
     symtable_t *cur = table;
     symtable_entry_list_t *cur_list;
     symtable_entry_node_t *cur_node;
@@ -59,12 +73,12 @@ symtable_entry_t *lookup(symtable_t *table, symtable_entry_t *entry) {
     return NULL;
 }
 
-bool enter(symtable_t *table, symtable_entry_t *entry) {
+bool symtable_enter(symtable_t *table, symtable_entry_t *entry) {
     /*
      * first check if the entry is in our table if not proceed
      */
 
-    if (lookup(table, entry)) {
+    if (symtable_lookup(table, entry)) {
         return false;
     }
 
@@ -90,16 +104,31 @@ bool enter(symtable_t *table, symtable_entry_t *entry) {
     return true;
 }
 
-void symtable_declaration(astnode_t *declaration, symtable_t *table) {
+void symtable_start_declaration(astnode_t *declaration, symtable_t *table) {
     astnode_t *declaration_spec_list = declaration->declaration.declaration_spec_list;
     astnode_t *init_declarator_list = declaration->declaration.init_declarator_list;
-    print_ast(declaration);
+    // print_ast(declaration);
     
     astnode_t *cur = init_declarator_list->ll_list.head;
     astnode_t *cur_node;
+    astnode_t *parse_list;
     while(cur != NULL) {
         cur_node = cur->ll_node.node;
+
         if (cur_node->type == AST_IDENT) {
+            if (cur->ll_node.next != NULL) {
+                parse_list = reduce_astlist(cur);
+                append_astlist(parse_list, declaration_spec_list);
+            }
+            else {
+                parse_list = declaration_spec_list;
+            }
+            symtable_entry_t *entry = alloc_symtable_entry(cur_node->ident.str.string_literal, NAMESPACE_ETC, ATTR_VAR);
+            entry->variable.type = parse_list->ll_list.head;
+            if(!symtable_enter(table, entry)) {
+                yyerror("RUH ROH SYMBOL ENTRY ALREADY EXISTS IN THE TABLE!!");
+                exit(-1);
+            }
         }
         cur = cur->ll_node.next;
     }

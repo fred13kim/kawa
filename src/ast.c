@@ -59,9 +59,16 @@ astnode_t *alloc_astnode_fncall(astnode_t *name, astnode_t *args) {
 
 astnode_t *alloc_astnode_ll_list(astnode_t *head) {
     astnode_t *astnode = alloc_astnode(AST_LL_LIST);
-    astnode->ll_list.head = head;
-    astnode->ll_list.tail = head;
-    astnode->ll_list.size = 1;
+    if (!head) {
+        astnode->ll_list.head = head;
+        astnode->ll_list.tail = head;
+        astnode->ll_list.size = 0;
+    }
+    else {
+        astnode->ll_list.head = head;
+        astnode->ll_list.tail = head;
+        astnode->ll_list.size = 1;
+    }
     return astnode;
 }
 
@@ -133,12 +140,49 @@ astnode_t *prepend_astnode_ll_node(astnode_t *list, astnode_t *ll_node) {
 
 /* append list2 to a list1 */
 astnode_t *append_astlist(astnode_t *list1, astnode_t *list2) {
-    (list1->ll_list.tail)->ll_node.next = list2->ll_list.head;
-    list1->ll_list.tail = list2->ll_list.tail;
+    if (!(list1->ll_list.head)) {
+        list1->ll_list.head = list2->ll_list.head;
+        list1->ll_list.tail = list2->ll_list.tail;
+    } else {
+        (list1->ll_list.tail)->ll_node.next = list2->ll_list.head;
+        list1->ll_list.tail = list2->ll_list.tail;
+    }
 
     list1->ll_list.size += list2->ll_list.size;
     return list1;
 }
+
+astnode_t *reduce_astlist(astnode_t *list) {
+    if (list == NULL) {
+        return NULL;
+    }
+
+
+    astnode_t *cur = list->ll_list.head;
+    astnode_t *ret_list = alloc_astnode_ll_list(NULL);
+    while (cur) {
+        switch(cur->ll_node.node->type) {
+            case AST_ARRAY:
+                append_astnode(ret_list,cur->ll_node.node);
+                cur->ll_node.node->array.ptr_to = cur->ll_node.next->ll_node.node;
+                break;
+            case AST_PTR:
+                append_astnode(ret_list,cur->ll_node.node);
+                cur->ll_node.node->ptr.ptr_to = cur->ll_node.next->ll_node.node;
+                break;
+            case AST_FUNC:
+                append_astnode(ret_list,cur->ll_node.node);
+                cur->ll_node.node->func.ret_type = cur->ll_node.next->ll_node.node; 
+                break;
+        }
+        cur = cur->ll_node.next;
+    }
+    /* probably should free the original list somehow without breaking the
+     * original ast tree
+     */
+    return ret_list;
+}
+
 
 astnode_t *alloc_astnode_sizeof(astnode_t *expr) {
     astnode_t *astnode = alloc_astnode(AST_SIZEOF);
@@ -170,6 +214,13 @@ astnode_t *alloc_astnode_string(string_t string) {
     return astnode;
 }
 
+
+
+
+
+
+
+
 astnode_t *alloc_astnode_declaration(astnode_t *declaration_spec_list, astnode_t *init_declarator_list) {
     astnode_t *astnode = alloc_astnode(AST_DECLARATION);
     astnode->declaration.declaration_spec_list = declaration_spec_list;
@@ -184,16 +235,21 @@ astnode_t *alloc_astnode_declaration_spec(int spec_type, int spec) {
     return astnode;
 }
 
-astnode_t *alloc_astnode_ptr(void) {
+astnode_t *alloc_astnode_ptr(astnode_t *ptr_to) {
     astnode_t *astnode = alloc_astnode(AST_PTR);
-    astnode->ptr.type = NULL; // keep the ptr type to NULL for now
+    astnode->ptr.ptr_to = ptr_to; // keep the ptr type to NULL for now
     return astnode;
 }
 
-astnode_t *alloc_astnode_array(astnode_t *expr) {
+astnode_t *alloc_astnode_array(astnode_t *ptr_to, astnode_t *size) {
     astnode_t *astnode = alloc_astnode(AST_ARRAY);
-    astnode->array.type = NULL;
-    astnode->array.size = expr;
+    astnode->array.ptr_to = NULL;
+    astnode->array.size = size;
+    return astnode;
+}
+
+astnode_t *alloc_astnode_func(astnode_t *name, astnode_t *args) {
+    astnode_t *astnode = alloc_astnode(AST_FUNC);
     return astnode;
 }
 

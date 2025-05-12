@@ -12,6 +12,7 @@ astnode_t *alloc_astnode_ternary(astnode_t *expr1, astnode_t *expr2, astnode_t *
 astnode_t *alloc_astnode_select(astnode_t *expr, string_t ident);
 astnode_t *alloc_astnode_fncall(astnode_t *name, astnode_t *args);
 
+void *free_astnode_ll_list(astnode_t *list);
 astnode_t *alloc_astnode_ll_list(astnode_t *head); // linked list list
 astnode_t *alloc_astnode_ll_node(astnode_t *arg); // linked list node
 astnode_t *append_astnode(astnode_t *list, astnode_t *node);
@@ -21,6 +22,7 @@ astnode_t *append_astnode_ll_node(astnode_t *list, astnode_t *ll_node);
 astnode_t *prepend_astnode(astnode_t *list, astnode_t *node);
 astnode_t *prepend_astnode_ll_node(astnode_t *list, astnode_t *ll_node);
 astnode_t *append_astlist(astnode_t *list1, astnode_t *list2);
+astnode_t *reduce_astlist(astnode_t *list);
 
 astnode_t *alloc_astnode_sizeof(astnode_t *expr);
 astnode_t *alloc_astnode_ident(string_t ident);
@@ -30,8 +32,8 @@ astnode_t *alloc_astnode_string(string_t string);
 astnode_t *alloc_astnode_declaration(astnode_t *declaration_spec_list, astnode_t *init_declarator_list);
 astnode_t *alloc_astnode_declaration_spec(int spec, int spec_type);
 
-astnode_t *alloc_astnode_ptr(void);
-astnode_t *alloc_astnode_array(astnode_t *expr);
+astnode_t *alloc_astnode_ptr(astnode_t *ptr_to);
+astnode_t *alloc_astnode_array(astnode_t *ptr_to, astnode_t *size);
 astnode_t *alloc_astnode_func(astnode_t *name, astnode_t *args);
 
 
@@ -54,6 +56,7 @@ enum nodetype{
 
     AST_PTR,
     AST_ARRAY,
+    AST_FUNC,
 };
 
 enum declaration_specifiers {
@@ -132,11 +135,11 @@ struct astnode_declaration_spec_s {
 };
 
 struct astnode_ptr_s {
-    astnode_t *type;
+    astnode_t *ptr_to;
 };
 
 struct astnode_array_s {
-    astnode_t *type;
+    astnode_t *ptr_to;
     astnode_t *size;
 };
 
@@ -165,6 +168,7 @@ struct astnode_s {
         struct astnode_declaration_spec_s declaration_spec;
         struct astnode_ptr_s        ptr;
         struct astnode_array_s      array;
+        struct astnode_func_s       func;
     };
 };
 

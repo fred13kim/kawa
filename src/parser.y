@@ -3,6 +3,7 @@
     #include <stdlib.h>
     #include "ast.h"
     #include "symtable.h"
+    #include "printer.h"
 
     extern int yylex(void);
     void yyerror(char const *);
@@ -165,12 +166,12 @@
 
 /* A.2.4 External Definitions */
 
-translation_unit: external_declaration 
-                | translation_unit external_declaration
+translation_unit: external_declaration                  { print_symtable(table); }
+                | translation_unit external_declaration { print_symtable(table); }
                 ;
 
 external_declaration: function_definition   { symtable_func_def(); }
-                    | declaration           { symtable_declaration($1, table); }
+                    | declaration           { symtable_start_declaration($1, table); }
                     ;
 
 function_definition : declaration_specifiers declarator declaration_list compound_statement
@@ -443,28 +444,28 @@ declaration : declaration_specifiers init_declarator_list ';'   {
             ;
 
 declaration_specifiers  : storage_class_specifier declaration_specifiers    {
-                            $$ = append_astnode($2, $1);
+                            $$ = prepend_astnode($2, $1);
                         }
                         | storage_class_specifier                           {
                             $$ = alloc_astnode_ll_node($1);
                             $$ = alloc_astnode_ll_list($$);
                         }
                         | type_specifier declaration_specifiers             {
-                            $$ = append_astnode($2, $1);
+                            $$ = prepend_astnode($2, $1);
                         }
                         | type_specifier                                    {
                             $$ = alloc_astnode_ll_node($1);
                             $$ = alloc_astnode_ll_list($$);
                         }
                         | type_qualifier declaration_specifiers             {
-                            $$ = append_astnode($2, $1);
+                            $$ = prepend_astnode($2, $1);
                         }
                         | type_qualifier                                    {
                             $$ = alloc_astnode_ll_node($1);
                             $$ = alloc_astnode_ll_list($$);
                         }
                         | function_specifier declaration_specifiers         {
-                            $$ = append_astnode($2, $1);
+                            $$ = prepend_astnode($2, $1);
 
                         }
                         | function_specifier                                {
@@ -513,7 +514,7 @@ function_specifier  : INLINE    { $$ = alloc_astnode_declaration_spec(FUNC_SPECI
                     ;
 
 
-declarator  : pointer direct_declarator { append_astlist($1, $2); }
+declarator  : pointer direct_declarator { $$ = append_astlist($2, $1); }
             | direct_declarator         { $$ = $1; }
             ;
 
@@ -524,14 +525,14 @@ direct_declarator   : IDENT                 {
                     }
                     | '(' declarator ')'    { $$ = $2; }
                     | direct_declarator '[' type_qualifier_list assignment_expr ']'     {
-                        $$ = alloc_astnode_array($4);
+                        $$ = alloc_astnode_array(NULL, $4);
                         $$ = append_astnode($1, $$);
                     }
                     | direct_declarator '[' type_qualifier_list  ']'                    {
                         yyerror("Not handling variable-length arrays");
                     }
                     | direct_declarator '[' assignment_expr ']'                         {
-                        $$ = alloc_astnode_array($3);
+                        $$ = alloc_astnode_array(NULL, $3);
                         $$ = append_astnode($1, $$);
                     }
                     | direct_declarator '[' ']'                                         {
@@ -540,16 +541,16 @@ direct_declarator   : IDENT                 {
 
                     // will not handle static
                     | direct_declarator '[' STATIC type_qualifier_list assignment_expr ']'  {
-                        $$ = alloc_astnode_array($5);
+                        $$ = alloc_astnode_array(NULL, $5);
                         $$ = append_astnode($1, $$);
                     }
                     | direct_declarator '[' STATIC assignment_expr ']'                      {
-                        $$ = alloc_astnode_array($4);
+                        $$ = alloc_astnode_array(NULL, $4);
                         $$ = append_astnode($1, $$);
                     }
 
                     | direct_declarator '[' type_qualifier_list STATIC assignment_expr ']'  {
-                        $$ = alloc_astnode_array($5);
+                        $$ = alloc_astnode_array(NULL, $5);
                         $$ = append_astnode($1, $$);
                     }
                     | direct_declarator '[' type_qualifier_list '*' ']'     {
@@ -559,10 +560,12 @@ direct_declarator   : IDENT                 {
                         yyerror("Not handling variable-length arrays");
                     }
                     | direct_declarator '(' parameter_type_list ')'         {
-
+                        $$ = alloc_astnode_func($1->ll_list.head,$3);
+                        $$ = append_astnode($1, $$);
                     }
                     | direct_declarator '(' identifier_list ')'             {
-
+                        $$ = alloc_astnode_func($1->ll_list.head,$3);
+                        $$ = append_astnode($1, $$);
                     }
                     | direct_declarator '(' ')'                             {
                         yyerror("Not handling ancient K&R function defs");
@@ -570,21 +573,21 @@ direct_declarator   : IDENT                 {
                     ;
 
 pointer : '*' type_qualifier_list           {
-            $$ = alloc_astnode_ptr();
+            $$ = alloc_astnode_ptr(NULL);
             $$ = alloc_astnode_ll_node($$);
             $$ = alloc_astnode_ll_list($$);
         }
         | '*' /* opt */                     {
-            $$ = alloc_astnode_ptr();
+            $$ = alloc_astnode_ptr(NULL);
             $$ = alloc_astnode_ll_node($$);
             $$ = alloc_astnode_ll_list($$);
         }
         | '*' type_qualifier_list pointer   {
-            $$ = alloc_astnode_ptr();
+            $$ = alloc_astnode_ptr(NULL);
             $$ = append_astnode($3, $$);
         }
         | '*' pointer                       {
-            $$ = alloc_astnode_ptr();
+            $$ = alloc_astnode_ptr(NULL);
             $$ = append_astnode($2, $$);
         }
         ;
