@@ -63,8 +63,10 @@ void print_symtable(symtable_t *table) {
 
     symtable_entry_list_t *cur_list = table->list;
     symtable_entry_node_t *cur_entry_node = cur_list->head;
+    symtable_entry_t *entry;
     while (cur_entry_node) {
-        fprintf(stdout, "entry name: %s\n", cur_entry_node->entry->name);
+        entry = cur_entry_node->entry;
+        fprintf(stdout, "entry name: %s is defined at %s:%d\n", entry->name, entry->filename, entry->lineno);
         switch(cur_entry_node->entry->attr_type) {
             case ATTR_VAR: 
                 fprintf(stdout, "type:\n");
@@ -224,7 +226,7 @@ void print_ast(astnode_t *astnode) {
                 case TYPE_VOLATILE:     fprintf(stdout, "volatile "); break;
                 case FUNC_INLINE:       fprintf(stdout, "inline "); break;
             }
-
+            fprintf(stdout,"\n");
             break;
 
         case AST_PTR:

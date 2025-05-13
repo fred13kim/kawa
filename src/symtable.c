@@ -171,7 +171,7 @@ void symtable_start_declaration(astnode_t *declaration, symtable_t *table) {
                 cur_node->array.ptr_to = declaration_spec_list;
                 break;
         }
-        append_astlist(list,declaration_spec_list);
+        append_astnode(list,declaration_spec_list);
 
         tmp_node = pop_head_astlist(list);
         entry = alloc_symtable_entry(tmp_node->ident.str.string_literal, NAMESPACE_ETC, ATTR_VAR);
