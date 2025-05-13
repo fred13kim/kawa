@@ -5,10 +5,13 @@
     #include "symtable.h"
     #include "printer.h"
 
-    extern int yylex(void);
     void yyerror(char const *);
+    void yywarn(char const *);
+    void yydebug(char const *);
 
+    extern int yylex(void);
     extern symtable_t *table;
+    extern file_info_t file_info;
 %}
 
 %code requires {
@@ -444,6 +447,11 @@ declaration : declaration_specifiers init_declarator_list ';'   {
             ;
 
 declaration_specifiers  : storage_class_specifier declaration_specifiers    {
+                            int long_count = 0;
+                            if (check_decl_list($2, $1, &long_count)) {
+                                yyerror("duplicate storage_class_specifier");
+                                exit(-1);
+                            }
                             $$ = prepend_astnode($2, $1);
                         }
                         | storage_class_specifier                           {
@@ -451,6 +459,11 @@ declaration_specifiers  : storage_class_specifier declaration_specifiers    {
                             $$ = alloc_astnode_ll_list($$);
                         }
                         | type_specifier declaration_specifiers             {
+                            int long_count = 0;
+                            if (check_decl_list($2, $1, &long_count)) {
+                                yyerror("duplicate type_specifier");
+                                exit(-1);
+                            }
                             $$ = prepend_astnode($2, $1);
                         }
                         | type_specifier                                    {
@@ -711,5 +724,13 @@ jump_statement  : GOTO IDENT
 %%
 
 void yyerror(char const *s) {
-    fprintf(stderr, "Error: %s\n", s);
+    fprintf(stderr, "%s:%d: Error: %s\n", file_info.filename, file_info.lineno, s);
+}
+
+void yywarn(char const *s) {
+    fprintf(stderr, "%s:%d: Warning: %s\n", file_info.filename, file_info.lineno, s);
+}
+
+void yydebug(char const *s) {
+    fprintf(stderr, "%s:%d: Debug: %s\n", file_info.filename, file_info.lineno, s);
 }
