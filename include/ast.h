@@ -2,6 +2,7 @@
 #define AST_H_
 
 #include "parser_defs.h"
+#include <stdbool.h>
 
 
 typedef struct astnode_s astnode_t;
@@ -22,7 +23,9 @@ astnode_t *append_astnode_ll_node(astnode_t *list, astnode_t *ll_node);
 astnode_t *prepend_astnode(astnode_t *list, astnode_t *node);
 astnode_t *prepend_astnode_ll_node(astnode_t *list, astnode_t *ll_node);
 astnode_t *append_astlist(astnode_t *list1, astnode_t *list2);
-astnode_t *reduce_astlist(astnode_t *list);
+astnode_t *pop_head_astlist(astnode_t *list);
+
+bool check_decl_list(astnode_t *list, astnode_t *node, int *long_count);
 
 astnode_t *alloc_astnode_sizeof(astnode_t *expr);
 astnode_t *alloc_astnode_ident(string_t ident);
@@ -50,10 +53,8 @@ enum nodetype{
     AST_NUM,
     AST_CHARLIT,
     AST_STRING,
-
     AST_DECLARATION,
     AST_DECLARATION_SPEC,
-
     AST_PTR,
     AST_ARRAY,
     AST_FUNC,

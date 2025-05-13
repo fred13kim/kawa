@@ -107,29 +107,83 @@ bool symtable_enter(symtable_t *table, symtable_entry_t *entry) {
 void symtable_start_declaration(astnode_t *declaration, symtable_t *table) {
     astnode_t *declaration_spec_list = declaration->declaration.declaration_spec_list;
     astnode_t *init_declarator_list = declaration->declaration.init_declarator_list;
-    // print_ast(declaration);
-    
-    astnode_t *cur = init_declarator_list->ll_list.head;
-    astnode_t *cur_node;
-    astnode_t *parse_list;
-    while(cur != NULL) {
-        cur_node = cur->ll_node.node;
 
+    if (init_declarator_list == NULL) {
+        yywarn("useless type name in empty declaration?!");
+        return;
+    }
+
+    /*
+     * must assign pointers from the ast nodes in the decl list the final
+     * pointer (ptr, array, func) should point to the declaration_spec_list
+     * must also split the variables too
+     * this is done by splitting the idents
+     * note that the declarator_list can only have the following astnodes:
+     * AST_IDENT
+     * AST_PTR
+     * AST_ARRAY
+     * AST_FUNC
+     */
+
+    astnode_t *cur = init_declarator_list->ll_list.head;
+    astnode_t *next;
+    astnode_t *tmp;
+    astnode_t *cur_node;
+    astnode_t *tmp_node;
+    astnode_t *list;
+    symtable_entry_t *entry;
+
+    // first node should always be an ident by grammar unless it is a function
+    while (cur) {
+        cur_node = cur->ll_node.node;
+        // reduce logic
         if (cur_node->type == AST_IDENT) {
-            if (cur->ll_node.next != NULL) {
-                parse_list = reduce_astlist(cur);
-                append_astlist(parse_list, declaration_spec_list);
-            }
-            else {
-                parse_list = declaration_spec_list;
-            }
-            symtable_entry_t *entry = alloc_symtable_entry(cur_node->ident.str.string_literal, NAMESPACE_ETC, ATTR_VAR);
-            entry->variable.type = parse_list->ll_list.head;
-            if(!symtable_enter(table, entry)) {
-                yyerror("RUH ROH SYMBOL ENTRY ALREADY EXISTS IN THE TABLE!!");
-                exit(-1);
+            tmp = alloc_astnode_ll_node(cur_node); // wrap the ident node in a
+                                                   // ll_node
+            list = alloc_astnode_ll_list(tmp);
+            // first check if the next node exists & is not an ident
+            next = cur->ll_node.next;
+            while (next != NULL && next->ll_node.node->type != AST_IDENT) {
+                // what follows should be all the declarators for this variable
+                // if cur is a ptr or array, we want to have it point to the
+                // next declarator
+                switch (cur_node->type) {
+                    case AST_PTR: 
+                        cur_node->ptr.ptr_to = next->ll_node.node;
+                        break;
+                    case AST_ARRAY:
+                        cur_node->array.ptr_to = next->ll_node.node;
+                        break;
+                }
+                append_astnode(list, next->ll_node.node);
+                cur = cur->ll_node.next;
+                next = cur->ll_node.next;
+                cur_node = cur->ll_node.node;
             }
         }
+
+        // top level reduction... 
+        switch(cur_node->type) {
+            case AST_PTR:
+                cur_node->ptr.ptr_to = declaration_spec_list;
+                break;
+            case AST_ARRAY:
+                cur_node->array.ptr_to = declaration_spec_list;
+                break;
+        }
+        append_astlist(list,declaration_spec_list);
+
+        tmp_node = pop_head_astlist(list);
+        entry = alloc_symtable_entry(tmp_node->ident.str.string_literal, NAMESPACE_ETC, ATTR_VAR);
+        entry->variable.type = list->ll_list.head->ll_node.node;
+
+        if (!symtable_enter(table,entry)) {
+                yyerror("symbol entry already exists in the table");
+                exit(-1);
+        }
+
+
+        // iterate to the next variable
         cur = cur->ll_node.next;
     }
 }

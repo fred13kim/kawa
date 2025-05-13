@@ -5,6 +5,7 @@
 #include "printer.h"
 
 
+
 void print_indent(int num) {
     for(int i = 0; i < num; i++) {
         fprintf(stdout, " ");
@@ -49,6 +50,10 @@ void print_op(int op) {
 }
 
 void print_symtable(symtable_t *table) {
+    if (table->list == NULL) {
+        yywarn("symbol table is empty");
+        return;
+    }
     switch(table->scope) {
         case SCOPE_GLOBAL:  fprintf(stdout, "global scope\n"); break;
         case SCOPE_BLOCK:   fprintf(stdout, "block scope\n"); break;
@@ -224,9 +229,13 @@ void print_ast(astnode_t *astnode) {
 
         case AST_PTR:
             fprintf(stdout, "PTR to\n");
+            print_ast(astnode->ptr.ptr_to);
             break;
         case AST_ARRAY:
-            fprintf(stdout, "ARRAY SIZE:\n");
+            fprintf(stdout, "ARRAY WITH SIZE:\n");
+            space++; print_ast(astnode->array.size); space--;
+            print_indent(space); fprintf(stdout, "of\n");
+            space++; print_ast(astnode->array.ptr_to); space--;
             break;
         case AST_FUNC:
             fprintf(stdout, "FUNC\n");

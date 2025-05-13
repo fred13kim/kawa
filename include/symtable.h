@@ -54,6 +54,7 @@ enum specifier_enum {
 
 
 
+symtable_entry_t *alloc_symtable_entry(char *name, int namespace, int type);
 symtable_t *symtable_create(int scope);
 void symtable_destroy(symtable_t *table);
 symtable_entry_t *symtable_lookup(symtable_t *table, symtable_entry_t *entry);

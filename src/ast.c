@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include "parser.h"
 #include "ast.h"
+#include "printer.h"
 
 astnode_t *alloc_astnode(enum nodetype t) {
     astnode_t *astnode = malloc(sizeof(astnode_t));
@@ -144,7 +145,7 @@ astnode_t *append_astlist(astnode_t *list1, astnode_t *list2) {
         list1->ll_list.head = list2->ll_list.head;
         list1->ll_list.tail = list2->ll_list.tail;
     } else {
-        (list1->ll_list.tail)->ll_node.next = list2->ll_list.head;
+        list1->ll_list.tail->ll_node.next = list2->ll_list.head;
         list1->ll_list.tail = list2->ll_list.tail;
     }
 
@@ -152,35 +153,45 @@ astnode_t *append_astlist(astnode_t *list1, astnode_t *list2) {
     return list1;
 }
 
-astnode_t *reduce_astlist(astnode_t *list) {
-    if (list == NULL) {
+
+/* attempt to pop the head of the linked list */
+astnode_t *pop_head_astlist(astnode_t *list) {
+    if (list->ll_list.size == 0) {
         return NULL;
     }
 
+    astnode_t *node = list->ll_list.head->ll_node.node;
 
+    list->ll_list.head = list->ll_list.head->ll_node.next;
+    list->ll_list.size--;
+
+    if(list->ll_list.size == 0) {
+        list->ll_list.head = NULL;
+    }
+    return node;
+}
+
+
+/* check if i can add the node to the decl list */
+/* make sure longs are limited ugh */
+bool check_decl_list(astnode_t *list, astnode_t *node, int *long_count) {
     astnode_t *cur = list->ll_list.head;
-    astnode_t *ret_list = alloc_astnode_ll_list(NULL);
+    astnode_t *cur_node;
     while (cur) {
-        switch(cur->ll_node.node->type) {
-            case AST_ARRAY:
-                append_astnode(ret_list,cur->ll_node.node);
-                cur->ll_node.node->array.ptr_to = cur->ll_node.next->ll_node.node;
-                break;
-            case AST_PTR:
-                append_astnode(ret_list,cur->ll_node.node);
-                cur->ll_node.node->ptr.ptr_to = cur->ll_node.next->ll_node.node;
-                break;
-            case AST_FUNC:
-                append_astnode(ret_list,cur->ll_node.node);
-                cur->ll_node.node->func.ret_type = cur->ll_node.next->ll_node.node; 
-                break;
+        cur_node = cur->ll_node.node;
+        if (cur_node->declaration_spec.spec == TYPE_LONG) {
+            (*long_count)++;
+            if (*long_count > 2) {
+                yyerror("Too many longs!");
+                exit(-1);
+            }
+        }
+        else if (cur_node->declaration_spec.spec == node->declaration_spec.spec) {
+            return true;
         }
         cur = cur->ll_node.next;
     }
-    /* probably should free the original list somehow without breaking the
-     * original ast tree
-     */
-    return ret_list;
+    return false;
 }
 
 

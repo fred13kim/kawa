@@ -474,6 +474,7 @@ declaration_specifiers  : storage_class_specifier declaration_specifiers    {
                             $$ = prepend_astnode($2, $1);
                         }
                         | type_qualifier                                    {
+                            yywarn("not handling type qualifiers");
                             $$ = alloc_astnode_ll_node($1);
                             $$ = alloc_astnode_ll_list($$);
                         }
@@ -482,6 +483,7 @@ declaration_specifiers  : storage_class_specifier declaration_specifiers    {
 
                         }
                         | function_specifier                                {
+                            yywarn("not handling inline");
                             $$ = alloc_astnode_ll_node($1);
                             $$ = alloc_astnode_ll_list($$);
                         }
@@ -575,13 +577,15 @@ direct_declarator   : IDENT                 {
                     | direct_declarator '(' parameter_type_list ')'         {
                         $$ = alloc_astnode_func($1->ll_list.head,$3);
                         $$ = append_astnode($1, $$);
+                        $$->ll_list.head= $1->ll_list.head->ll_node.next;
                     }
                     | direct_declarator '(' identifier_list ')'             {
-                        $$ = alloc_astnode_func($1->ll_list.head,$3);
-                        $$ = append_astnode($1, $$);
+                        yyerror("Not handling ancient K&R function defs");
                     }
                     | direct_declarator '(' ')'                             {
-                        yyerror("Not handling ancient K&R function defs");
+                        $$ = alloc_astnode_func($1->ll_list.head,NULL);
+                        $$ = append_astnode($1, $$);
+                        $$->ll_list.head= $1->ll_list.head->ll_node.next;
                     }
                     ;
 
