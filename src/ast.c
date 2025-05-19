@@ -310,6 +310,42 @@ astnode_t *alloc_astnode_compound_statement(astnode_t *block_items, symtable_t *
     return astnode;
 }
 
+astnode_t *alloc_astnode_labeled_statement(int type, astnode_t *ident, astnode_t *statement, astnode_t *cond) {
+    astnode_t *astnode = alloc_astnode(AST_LABELED_STATEMENT);
+    astnode->labeled_statement.type = type;
+    astnode->labeled_statement.ident = ident;
+    astnode->labeled_statement.statement = statement;
+    astnode->labeled_statement.cond = cond;
+    return astnode;
+}
+
+astnode_t *alloc_astnode_select_statement(int type, astnode_t *cond, astnode_t *statement, astnode_t *else_statement) {
+    astnode_t *astnode = alloc_astnode(AST_SELECT_STATEMENT);
+    astnode->select_statement.type = type;
+    astnode->select_statement.cond = cond;
+    astnode->select_statement.statement= statement;
+    astnode->select_statement.else_statement = else_statement;
+    return astnode;
+}
+
+astnode_t *alloc_astnode_iteration_statement(int type, astnode_t *cond, astnode_t *statement, astnode_t *clause1, astnode_t *expr3) {
+    astnode_t *astnode = alloc_astnode(AST_ITERATION_STATEMENT);
+    astnode->iteration_statement.type = type;
+    astnode->iteration_statement.cond = cond;
+    astnode->iteration_statement.statement = statement;
+    astnode->iteration_statement.clause1 = clause1;
+    astnode->iteration_statement.expr3 = expr3;
+    return astnode;
+}
+
+astnode_t *alloc_astnode_jump_statement(int type, astnode_t *ident, astnode_t *expr) {
+    astnode_t *astnode = alloc_astnode(AST_JUMP_STATEMENT);
+    astnode->jump_statement.type = type;
+    astnode->jump_statement.ident = ident;
+    astnode->jump_statement.expr = expr;
+    return astnode;
+}
+
 
 
 

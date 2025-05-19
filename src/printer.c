@@ -76,8 +76,7 @@ void print_symtable(symtable_t *table) {
         switch(entry->attr_type) {
             case ATTR_VAR: 
                 fprintf(stdout, "entry name: %s is declared at %s:%d\n", entry->name, entry->filename, entry->lineno);
-                fprintf(stdout, "AST VAR DUMP:\n");
-                print_ast(entry->variable.type);
+                fprintf(stdout, "AST VAR DUMP:\n"); print_ast(entry->variable.type);
                 fprintf(stdout, "\n");
                 break;
             case ATTR_FUNC:
@@ -85,9 +84,9 @@ void print_symtable(symtable_t *table) {
                 fprintf(stdout, "AST FUNC DUMP:\n");
                 print_ast(entry->function.type);
                 fprintf(stdout, "BLOCK:\n");
+                ;;
                 print_ast(entry->function.type->func.block);
                 fprintf(stdout, "SYMTABLE:\n");
-                entry;
                 print_symtable(entry->function.type->func.block->compound_statement.table);
                 fprintf(stdout, "\n");
                 break;
@@ -257,13 +256,100 @@ void print_ast(astnode_t *astnode) {
                 fprintf(stdout, "empty block\n");
                 return;
             }
-            space++;
-            astnode_t *block_item = astnode->compound_statement.block_items->ll_list.head;
-            while (block_item) {
-                print_ast(block_item->ll_node.node); space--;
-                block_item = block_item->ll_node.next;
+            astnode_t *block_items = astnode->compound_statement.block_items;
+            space++; print_ast(block_items); space--;
+            break;
+
+        case AST_LABELED_STATEMENT:
+            switch(astnode->labeled_statement.type) {
+                case LABEL_ID:
+                    fprintf(stdout, "LABEL:\n");
+                    space++; print_ast(astnode->labeled_statement.ident); space--;
+                    space++; print_ast(astnode->labeled_statement.statement); space--;
+                    break;
+                case LABEL_CASE:
+                    fprintf(stdout, "CASE:\n");
+                    space++; print_ast(astnode->labeled_statement.cond); space--;
+                    space++; print_ast(astnode->labeled_statement.statement); space--;
+                    break;
+                case LABEL_DEF:
+                    fprintf(stdout, "DEFAULT:\n");
+                    space++; print_ast(astnode->labeled_statement.statement); space--;
+                    break;
             }
-            space--;
+            break;
+            
+        case AST_SELECT_STATEMENT:
+            switch(astnode->select_statement.type) {
+                case SELECT_IF:
+                    fprintf(stdout, "IF:\n");
+                    space++; print_ast(astnode->select_statement.cond); space--;
+                    print_indent(space); fprintf(stdout, "THEN:\n");
+                    space++; print_ast(astnode->select_statement.statement); space--;
+                    break;
+                case SELECT_ELIF:
+                    fprintf(stdout, "IF:\n");
+                    space++; print_ast(astnode->select_statement.cond); space--;
+                    print_indent(space); fprintf(stdout, "THEN:\n");
+                    space++; print_ast(astnode->select_statement.statement); space--;
+                    print_indent(space); fprintf(stdout, "ELSE:\n");
+                    space++; print_ast(astnode->select_statement.else_statement); space--;
+                    break;
+                case SELECT_SWITCH:
+                    fprintf(stdout, "SWITCH:\n");
+                    print_indent(space); fprintf(stdout, "COND:\n");
+                    space++; print_ast(astnode->select_statement.cond); space--;
+                    print_indent(space); fprintf(stdout, "STATEMENT:\n");
+                    space++; print_ast(astnode->select_statement.statement); space--;
+                    break;
+            }
+            break;
+
+        case AST_ITERATION_STATEMENT:
+            switch(astnode->iteration_statement.type) {
+                case ITER_WHILE:
+                    fprintf(stdout, "WHILE:\n");
+                    space++; print_ast(astnode->iteration_statement.cond); space--;
+                    print_indent(space); fprintf(stdout, "DO:\n");
+                    space++; print_ast(astnode->iteration_statement.statement); space--;
+                    break;
+                case ITER_DO:
+                    fprintf(stdout, "DO:\n");
+                    space++; print_ast(astnode->iteration_statement.statement); space--;
+                    print_indent(space); fprintf(stdout, "WHILE:\n");
+                    space++; print_ast(astnode->iteration_statement.cond); space--;
+                    break;
+                case ITER_FOR:
+                    fprintf(stdout, "FOR:\n");
+                    print_indent(space); fprintf(stdout, "INIT:\n");
+                    space++; print_ast(astnode->iteration_statement.clause1); space--;
+                    print_indent(space); fprintf(stdout, "COND:\n");
+                    space++; print_ast(astnode->iteration_statement.cond); space--;
+                    print_indent(space); fprintf(stdout, "UPDATE:\n");
+                    space++; print_ast(astnode->iteration_statement.expr3); space--;
+                    print_indent(space); fprintf(stdout, "BODY:\n");
+                    space++; print_ast(astnode->iteration_statement.statement); space--;
+                    break;
+            }
+            break;
+
+        case AST_JUMP_STATEMENT:
+            switch(astnode->jump_statement.type) {
+                case JUMP_GOTO:
+                    fprintf(stdout, "GOTO:\n");
+                    space++; print_ast(astnode->jump_statement.ident); space--;
+                    break;
+                case JUMP_CONTINUE:
+                    fprintf(stdout, "CONTINUE\n");
+                    break;
+                case JUMP_BREAK:
+                    fprintf(stdout, "BREAK\n");
+                    break;
+                case JUMP_RETURN:
+                    fprintf(stdout, "RETURN:\n");
+                    space++; print_ast(astnode->jump_statement.expr); space--;
+                    break;
+            }
             break;
 
 

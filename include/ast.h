@@ -43,6 +43,10 @@ astnode_t *alloc_astnode_array(astnode_t *ptr_to, astnode_t *size);
 astnode_t *alloc_astnode_func(astnode_t *name, astnode_t *args);
 
 astnode_t *alloc_astnode_compound_statement(astnode_t *statements, symtable_t *table);
+astnode_t *alloc_astnode_labeled_statement(int type, astnode_t *ident, astnode_t *statement, astnode_t *cond);
+astnode_t *alloc_astnode_select_statement(int type, astnode_t *cond, astnode_t *statement, astnode_t *else_statement);
+astnode_t *alloc_astnode_iteration_statement(int type, astnode_t *cond, astnode_t *statement, astnode_t *clause1, astnode_t *expr3);
+astnode_t *alloc_astnode_jump_statement(int type, astnode_t *ident, astnode_t *expr);
 
 
 enum nodetype{
@@ -65,6 +69,10 @@ enum nodetype{
     AST_FUNC,
 
     AST_COMPOUND_STATEMENT,
+    AST_LABELED_STATEMENT,
+    AST_SELECT_STATEMENT,
+    AST_ITERATION_STATEMENT,
+    AST_JUMP_STATEMENT,
 };
 
 enum declaration_specifiers {
@@ -72,6 +80,31 @@ enum declaration_specifiers {
     TYPE_SPECIFIER,
     TYPE_QUALIFIER,
     FUNC_SPECIFIER,
+};
+
+enum label_type {
+    LABEL_ID,
+    LABEL_CASE,
+    LABEL_DEF,
+};
+
+enum select_type {
+    SELECT_IF,
+    SELECT_ELIF,
+    SELECT_SWITCH,
+};
+
+enum iter_type {
+    ITER_WHILE,
+    ITER_DO,
+    ITER_FOR,
+};
+
+enum jump_type {
+    JUMP_GOTO,
+    JUMP_CONTINUE,
+    JUMP_BREAK,
+    JUMP_RETURN,
 };
 
 struct astnode_unary_s {
@@ -164,6 +197,35 @@ struct astnode_compound_statement_s {
     astnode_t *block_items; // list of statements
 };
 
+struct astnode_labeled_statement_s {
+    int type;
+    astnode_t *ident;
+    astnode_t *statement;
+    astnode_t *cond;
+};
+
+struct astnode_select_statement_s {
+    int type;
+    astnode_t *cond;
+    astnode_t *statement;
+    astnode_t *else_statement;
+};
+
+struct astnode_iteration_statement_s {
+    int type;
+    astnode_t *cond;
+    astnode_t *statement;
+    // for for loops
+    astnode_t *clause1;
+    astnode_t *expr3;
+};
+
+struct astnode_jump_statement_s {
+    int type;
+    astnode_t *ident;
+    astnode_t *expr;
+};
+
 struct astnode_s {
     enum nodetype type;
     union {
@@ -186,6 +248,10 @@ struct astnode_s {
         struct astnode_func_s       func;
 
         struct astnode_compound_statement_s     compound_statement;
+        struct astnode_labeled_statement_s      labeled_statement;
+        struct astnode_select_statement_s       select_statement;
+        struct astnode_iteration_statement_s    iteration_statement;
+        struct astnode_jump_statement_s         jump_statement;
     };
 };
 

@@ -114,8 +114,8 @@
                     parameter_declaration
                     identifier_list
                     /* type_name */
-                    abstract_declarator
-                    direct_abstract_declarator
+                    //abstract_declarator
+                    //direct_abstract_declarator
                     /* typedef_name */
                     /* initializer  */
                     /* initializer_list */
@@ -165,6 +165,9 @@
 %left INDSEL
 %left '.'
 %left '(' ')' '[' ']'
+
+%left IF
+%left ELSE
 
 
 %%
@@ -652,7 +655,7 @@ parameter_list  : parameter_declaration
                 ;
 
 parameter_declaration   : declaration_specifiers declarator
-                        | declaration_specifiers abstract_declarator
+                        //| declaration_specifiers abstract_declarator
                         | declaration_specifiers
                         ;
 
@@ -667,6 +670,7 @@ identifier_list : IDENT                     {
                 }
                 ;
 
+/*
 abstract_declarator : pointer
                     | pointer direct_abstract_declarator
                     | direct_abstract_declarator
@@ -685,8 +689,8 @@ direct_abstract_declarator  : '(' abstract_declarator ')'
                             | '(' parameter_type_list ')'
                             | '(' ')'
                             ;
+*/
 
-/*
 statement   : labeled_statement     { $$ = $1; }
             | compound_statement    { $$ = $1; }
             | expr_statement        { $$ = $1; }
@@ -694,15 +698,17 @@ statement   : labeled_statement     { $$ = $1; }
             | iteration_statement   { $$ = $1; }
             | jump_statement        { $$ = $1; }
             ;
-*/
 
-statement   : compound_statement    { $$ = $1; }
-            | expr_statement        { $$ = $1; }
-            ;
-
-labeled_statement   : IDENT ':' statement
-                    | CASE constant_expr ':' statement
-                    | DEFAULT ':' statement
+labeled_statement   : IDENT ':' statement               {
+                        $$ = alloc_astnode_ident($1);
+                        $$ = alloc_astnode_labeled_statement(LABEL_ID,$$,$3,NULL);
+                    }
+                    | CASE constant_expr ':' statement  {
+                        $$ = alloc_astnode_labeled_statement(LABEL_CASE,NULL,$4,$2);
+                    }
+                    | DEFAULT ':' statement             {
+                        $$ = alloc_astnode_labeled_statement(LABEL_DEF,NULL,$3,NULL);
+                    }
                     ;
 
 // if this compound statement was called from a function def, we will be in function
@@ -726,7 +732,7 @@ compound_statement  : '{' {
                     } block_item_list '}'   {
                         $$ = alloc_astnode_compound_statement($3,table);
                         // let's make sure to leave block_scope now
-                        print_symtable(table);
+                        //print_symtable(table);
                         table = symtable_pop(table);
                     }
                     | '{' '}'                   {
@@ -751,21 +757,38 @@ block_item  : declaration   { $$ = $1; symtable_start_declaration($1, table); }
 expr_statement  : expr_opt ';'  { $$ = $1; }
                 ;
 
-selection_statement : IF '(' expr ')' statement
-                    | IF '(' expr ')' statement ELSE statement
-                    | SWITCH '(' expr ')' statement
+selection_statement : IF '(' expr ')' statement                 {
+                        $$ = alloc_astnode_select_statement(SELECT_IF,$3,$5,NULL);
+                    }
+                    | IF '(' expr ')' statement ELSE statement  {
+                        $$ = alloc_astnode_select_statement(SELECT_ELIF,$3,$5,$7);
+                    } 
+                    | SWITCH '(' expr ')' statement             {
+                        $$ = alloc_astnode_select_statement(SELECT_SWITCH,$3,$5,NULL);
+                    }
                     ;
 
-iteration_statement : WHILE '(' expr ')' statement
-                    | DO statement WHILE '(' expr ')'
-                    | FOR '(' expr_opt ';' expr_opt ';' expr_opt ')' statement
-                    | FOR '(' declaration expr_opt ';' expr_opt ')' statement
+iteration_statement : WHILE '(' expr ')' statement      {
+                        $$ = alloc_astnode_iteration_statement(ITER_WHILE,$3,$5,NULL,NULL);
+                    }
+                    | DO statement WHILE '(' expr ')'   {
+                        $$ = alloc_astnode_iteration_statement(ITER_DO,$5,$2,NULL,NULL);
+                    }
+                    | FOR '(' {
+                        table = symtable_push(table, SCOPE_BLOCK);
+                    } expr_opt ';' expr_opt ';' expr_opt ')' statement {
+                        $$ = alloc_astnode_iteration_statement(ITER_FOR,$6,$10,$4,$8);
+                        table = symtable_pop(table);
+                    }
                     ;
 
-jump_statement  : GOTO IDENT
-                | CONTINUE ';'
-                | BREAK ';'         
-                | RETURN expr_opt ';'
+jump_statement  : GOTO IDENT ';'        {
+                    $$ = alloc_astnode_ident($2);
+                    $$ = alloc_astnode_jump_statement(JUMP_GOTO, $$, NULL);
+                }
+                | CONTINUE ';'          { $$ = alloc_astnode_jump_statement(JUMP_CONTINUE, NULL, NULL); }
+                | BREAK ';'             { $$ = alloc_astnode_jump_statement(JUMP_BREAK, NULL, NULL); }
+                | RETURN expr_opt ';'   { $$ = alloc_astnode_jump_statement(JUMP_RETURN, NULL, $2); }
                 ;
 
 
