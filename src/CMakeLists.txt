@@ -19,7 +19,7 @@ bison_target(
 add_flex_bison_dependency(lexer parser)
 
 add_executable(
-    parsertester
+    kawa
     parsertester.c
     ast.c
     symtable.c
@@ -30,7 +30,7 @@ add_executable(
 
 
 target_include_directories(
-    parsertester
+    kawa
     PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
     PRIVATE ${CMAKE_SOURCE_DIR}/include
 )

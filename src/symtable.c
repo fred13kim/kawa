@@ -186,6 +186,7 @@ int symtable_enter_declarator(astnode_t *declarator, astnode_t *declaration_spec
 
         if (!symtable_enter(table,entry)) {
                 yyerror("symbol entry already exists in the table");
+                exit(-1);
         }
 
         // iterate to the next variable/func
