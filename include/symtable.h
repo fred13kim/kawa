@@ -55,13 +55,14 @@ enum specifier_enum {
 
 
 symtable_entry_t *alloc_symtable_entry(char *name, int namespace, int type);
+
 symtable_t *symtable_create(int scope);
 void symtable_destroy(symtable_t *table);
 symtable_entry_t *symtable_lookup(symtable_t *table, symtable_entry_t *entry);
 bool symtable_enter(symtable_t *table, symtable_entry_t *entry);
 
 void symtable_start_declaration(astnode_t *declaration, symtable_t *table);
-void symtable_func_def();
+void symtable_start_func_def(astnode_t *func_def, symtable_t *table);
 
 struct attr_variable_s {
     astnode_t *type;

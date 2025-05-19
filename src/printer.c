@@ -69,7 +69,7 @@ void print_symtable(symtable_t *table) {
         fprintf(stdout, "entry name: %s is defined at %s:%d\n", entry->name, entry->filename, entry->lineno);
         switch(cur_entry_node->entry->attr_type) {
             case ATTR_VAR: 
-                fprintf(stdout, "type:\n");
+                fprintf(stdout, "with type:\n");
                 print_ast(cur_entry_node->entry->variable.type);
                 fprintf(stdout, "\n");
                 break;
@@ -231,7 +231,7 @@ void print_ast(astnode_t *astnode) {
 
         case AST_PTR:
             fprintf(stdout, "PTR to\n");
-            print_ast(astnode->ptr.ptr_to);
+            space++; print_ast(astnode->ptr.ptr_to); space--;
             break;
         case AST_ARRAY:
             fprintf(stdout, "ARRAY WITH SIZE:\n");
@@ -240,8 +240,8 @@ void print_ast(astnode_t *astnode) {
             space++; print_ast(astnode->array.ptr_to); space--;
             break;
         case AST_FUNC:
-            fprintf(stdout, "FUNC\n");
-            print_ast(astnode->func.ret_type);
+            fprintf(stdout, "FUNC WITH RET TYPE:\n");
+            space++; print_ast(astnode->func.ret_type); space--;
             break;
 
         default:

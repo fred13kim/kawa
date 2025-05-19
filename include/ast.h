@@ -24,6 +24,9 @@ astnode_t *prepend_astnode(astnode_t *list, astnode_t *node);
 astnode_t *prepend_astnode_ll_node(astnode_t *list, astnode_t *ll_node);
 astnode_t *append_astlist(astnode_t *list1, astnode_t *list2);
 astnode_t *pop_head_astlist(astnode_t *list);
+astnode_t *pop_tail_astlist(astnode_t *list);
+
+void print_list(astnode_t *list);
 
 bool check_decl_list(astnode_t *list, astnode_t *node, int *long_count);
 
@@ -58,6 +61,8 @@ enum nodetype{
     AST_PTR,
     AST_ARRAY,
     AST_FUNC,
+
+    AST_COMPOUND_STATEMENT,
 };
 
 enum declaration_specifiers {
@@ -148,6 +153,10 @@ struct astnode_func_s {
     astnode_t *name;
     astnode_t *args;
     astnode_t *ret_type;
+};
+
+struct astnode_compound_statement_s {
+
 };
 
 struct astnode_s {

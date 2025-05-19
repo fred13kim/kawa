@@ -104,15 +104,19 @@ bool symtable_enter(symtable_t *table, symtable_entry_t *entry) {
     return true;
 }
 
-void symtable_start_declaration(astnode_t *declaration, symtable_t *table) {
-    astnode_t *declaration_spec_list = declaration->declaration.declaration_spec_list;
-    astnode_t *init_declarator_list = declaration->declaration.init_declarator_list;
+// int f(void), *fip(), (*pfi)();
+// evaluates to IDENT F -> AST_FUNC -> IDENT FIP -> FUNC -> PTR -> IDENT PFI -> PTR -> FUNC
 
-    if (init_declarator_list == NULL) {
-        yywarn("useless type name in empty declaration?!");
-        return;
-    }
-
+// adds a declarator into the symtable
+int symtable_enter_declarator(astnode_t *declarator, astnode_t *declaration_spec_list, symtable_t *table) {
+    astnode_t *cur = declarator->ll_list.head;
+    astnode_t *next;
+    astnode_t *tmp;
+    astnode_t *cur_node;
+    astnode_t *tmp_node;
+    astnode_t *list;
+    symtable_entry_t *entry;
+    // first node should always be an ident by grammar unless it is a function
     /*
      * must assign pointers from the ast nodes in the decl list the final
      * pointer (ptr, array, func) should point to the declaration_spec_list
@@ -124,16 +128,6 @@ void symtable_start_declaration(astnode_t *declaration, symtable_t *table) {
      * AST_ARRAY
      * AST_FUNC
      */
-
-    astnode_t *cur = init_declarator_list->ll_list.head;
-    astnode_t *next;
-    astnode_t *tmp;
-    astnode_t *cur_node;
-    astnode_t *tmp_node;
-    astnode_t *list;
-    symtable_entry_t *entry;
-
-    // first node should always be an ident by grammar unless it is a function
     while (cur) {
         cur_node = cur->ll_node.node;
         // reduce logic
@@ -154,6 +148,9 @@ void symtable_start_declaration(astnode_t *declaration, symtable_t *table) {
                     case AST_ARRAY:
                         cur_node->array.ptr_to = next->ll_node.node;
                         break;
+                    case AST_FUNC:
+                        cur_node->func.ret_type = next->ll_node.node;
+                        break;
                 }
                 append_astnode(list, next->ll_node.node);
                 cur = cur->ll_node.next;
@@ -170,7 +167,10 @@ void symtable_start_declaration(astnode_t *declaration, symtable_t *table) {
             case AST_ARRAY:
                 cur_node->array.ptr_to = declaration_spec_list;
                 break;
+            case AST_FUNC:
+                cur_node->func.ret_type = declaration_spec_list;
         }
+
         append_astnode(list,declaration_spec_list);
 
         tmp_node = pop_head_astlist(list);
@@ -179,16 +179,37 @@ void symtable_start_declaration(astnode_t *declaration, symtable_t *table) {
 
         if (!symtable_enter(table,entry)) {
                 yyerror("symbol entry already exists in the table");
-                exit(-1);
         }
 
-
-        // iterate to the next variable
+        // iterate to the next variable/func
         cur = cur->ll_node.next;
     }
-}
-void symtable_func_def() {
 
+}
+
+
+void symtable_start_declaration(astnode_t *declaration, symtable_t *table) {
+    astnode_t *declaration_spec_list = declaration->declaration.declaration_spec_list;
+    astnode_t *init_declarator_list = declaration->declaration.init_declarator_list;
+
+
+    if (init_declarator_list == NULL) {
+        yywarn("useless type name in empty declaration?!");
+        return;
+    }
+
+
+    astnode_t *cur_decl = init_declarator_list->ll_list.head;
+    astnode_t *cur_decl_node;
+    while (cur_decl) {
+        cur_decl_node = cur_decl->ll_node.node;
+        // add each of the declarators into the symbol table
+        symtable_enter_declarator(cur_decl_node, declaration_spec_list, table);
+        cur_decl = cur_decl->ll_node.next;
+    }
+
+}
+void symtable_start_func_def(astnode_t *func_def, symtable_t *table) {
 }
 
 

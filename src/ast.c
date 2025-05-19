@@ -167,8 +167,50 @@ astnode_t *pop_head_astlist(astnode_t *list) {
 
     if(list->ll_list.size == 0) {
         list->ll_list.head = NULL;
+        list->ll_list.tail = NULL;
     }
     return node;
+}
+
+astnode_t *pop_tail_astlist(astnode_t *list) {
+    if (list->ll_list.size == 0) {
+        return NULL;
+    }
+    astnode_t *node = list->ll_list.tail->ll_node.node;
+    if (list->ll_list.size == 1) {
+        list->ll_list.size--;
+        list->ll_list.head = NULL;
+        list->ll_list.tail = NULL;
+        return node;
+    }
+
+    astnode_t *cur = list->ll_list.head;
+    // sigh i shouldve just made it a doubly LL without this node container
+    // bs
+    while (cur->ll_node.next->ll_node.next) {
+        cur = cur->ll_node.next;
+    }
+    list->ll_list.tail = cur;
+    cur->ll_node.next = NULL;
+
+    return node;
+}
+
+void print_list(astnode_t *list) {
+    if (list == NULL) {
+        yyerror("List is NULL!");
+    }
+    astnode_t *cur = list->ll_list.head;
+    astnode_t *cur_node;
+    while(cur)
+    {
+        cur_node = cur->ll_node.node;
+        if (!cur) {
+            yyerror("ll node contains NULL");
+        }
+        printf("%d\n", cur_node->type);
+        cur = cur->ll_node.next;
+    }
 }
 
 
@@ -227,11 +269,6 @@ astnode_t *alloc_astnode_string(string_t string) {
 
 
 
-
-
-
-
-
 astnode_t *alloc_astnode_declaration(astnode_t *declaration_spec_list, astnode_t *init_declarator_list) {
     astnode_t *astnode = alloc_astnode(AST_DECLARATION);
     astnode->declaration.declaration_spec_list = declaration_spec_list;
@@ -261,6 +298,8 @@ astnode_t *alloc_astnode_array(astnode_t *ptr_to, astnode_t *size) {
 
 astnode_t *alloc_astnode_func(astnode_t *name, astnode_t *args) {
     astnode_t *astnode = alloc_astnode(AST_FUNC);
+    astnode->func.name = name;
+    astnode->func.args = args;
     return astnode;
 }
 

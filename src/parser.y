@@ -173,16 +173,24 @@ translation_unit: external_declaration                  { print_symtable(table);
                 | translation_unit external_declaration { print_symtable(table); }
                 ;
 
-external_declaration: function_definition   { symtable_func_def(); }
+external_declaration: function_definition   { symtable_start_func_def($1, table);}
                     | declaration           { symtable_start_declaration($1, table); }
                     ;
 
-function_definition : declaration_specifiers declarator declaration_list compound_statement
-                    | declaration_specifiers declarator compound_statement
+function_definition : declaration_specifiers declarator declaration_list compound_statement {
+                        yyerror("not supporting old c-style functions");
+                        exit(-1);
+                    }
+                    | declaration_specifiers declarator {
+
+                    }
+                    compound_statement  { 
+                    }
                     ;
 
+// obsolete?
 declaration_list: declaration                   {}
-                | declaration_list declaration  { /* APPEND SHIT */ }
+                | declaration_list declaration  {}
                 ;
 
 /* A.2.1 Expressions */
@@ -493,7 +501,10 @@ init_declarator_list: init_declarator                           { $$ = $1; }
                     | init_declarator_list ',' init_declarator  { $$ = append_astlist($1, $3); }
                     ;
 
-init_declarator : declarator    { $$ = $1; }
+init_declarator : declarator    {
+                    $$ = alloc_astnode_ll_node($1);
+                    $$ = alloc_astnode_ll_list($$);
+                }
                 ;
 
 storage_class_specifier : TYPEDEF   { $$ = alloc_astnode_declaration_spec(STORAGE_CLASS, STORAGE_TYPEDEF); }
@@ -575,17 +586,14 @@ direct_declarator   : IDENT                 {
                         yyerror("Not handling variable-length arrays");
                     }
                     | direct_declarator '(' parameter_type_list ')'         {
-                        $$ = alloc_astnode_func($1->ll_list.head,$3);
-                        $$ = append_astnode($1, $$);
-                        $$->ll_list.head= $1->ll_list.head->ll_node.next;
+                        yyerror("Not handling parameters for functions :(");
                     }
                     | direct_declarator '(' identifier_list ')'             {
                         yyerror("Not handling ancient K&R function defs");
                     }
                     | direct_declarator '(' ')'                             {
-                        $$ = alloc_astnode_func($1->ll_list.head,NULL);
+                        $$ = alloc_astnode_func($1->ll_list.head->ll_node.node,NULL);
                         $$ = append_astnode($1, $$);
-                        $$->ll_list.head= $1->ll_list.head->ll_node.next;
                     }
                     ;
 
