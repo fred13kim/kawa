@@ -236,7 +236,6 @@ bool check_decl_list(astnode_t *list, astnode_t *node, int *long_count) {
     return false;
 }
 
-
 astnode_t *alloc_astnode_sizeof(astnode_t *expr) {
     astnode_t *astnode = alloc_astnode(AST_SIZEOF);
     astnode->_sizeof.expr = expr;
@@ -298,11 +297,18 @@ astnode_t *alloc_astnode_array(astnode_t *ptr_to, astnode_t *size) {
 
 astnode_t *alloc_astnode_func(astnode_t *name, astnode_t *args) {
     astnode_t *astnode = alloc_astnode(AST_FUNC);
+    astnode->func.table = symtable_create(SCOPE_FUNC);
     astnode->func.name = name;
     astnode->func.args = args;
     return astnode;
 }
 
+astnode_t *alloc_astnode_compound_statement(astnode_t *block_items, symtable_t *table) {
+    astnode_t *astnode = alloc_astnode(AST_COMPOUND_STATEMENT);
+    astnode->compound_statement.block_items = block_items;
+    astnode->compound_statement.table = table;
+    return astnode;
+}
 
 
 

@@ -54,6 +54,7 @@ enum specifier_enum {
 
 
 
+void print_scopes(symtable_t *table);
 symtable_entry_t *alloc_symtable_entry(char *name, int namespace, int type);
 
 symtable_t *symtable_create(int scope);
@@ -64,6 +65,12 @@ bool symtable_enter(symtable_t *table, symtable_entry_t *entry);
 void symtable_start_declaration(astnode_t *declaration, symtable_t *table);
 void symtable_start_func_def(astnode_t *func_def, symtable_t *table);
 
+symtable_t *symtable_push(symtable_t *table, int scope);
+symtable_t *symtable_push_table(symtable_t *table_cur, symtable_t *table_new);
+symtable_t *symtable_pop(symtable_t *table);
+
+
+
 struct attr_variable_s {
     astnode_t *type;
     int offset; /* within stack frame for automatic storage class only ? */
@@ -71,6 +78,9 @@ struct attr_variable_s {
 
 struct attr_function_s {
     astnode_t *type;
+    int storage_class; // extern or static
+    bool inline_spec;
+    bool defined; 
 };
 
 struct attr_statement_label_s {

@@ -49,8 +49,14 @@ void print_op(int op) {
     fprintf(stdout,"%s",s);
 }
 
+static int space = 2;
+
 void print_symtable(symtable_t *table) {
-    if (table->list == NULL) {
+    if (!table){
+        yywarn("symbol table does not exist");
+        return;
+    }
+    if (!table->list) {
         yywarn("symbol table is empty");
         return;
     }
@@ -60,26 +66,35 @@ void print_symtable(symtable_t *table) {
         case SCOPE_FUNC:    fprintf(stdout, "func scope\n"); break;
         case SCOPE_PROTO:   fprintf(stdout, "proto scope\n"); break;
     }
+    fprintf(stdout, "----\n");
 
     symtable_entry_list_t *cur_list = table->list;
     symtable_entry_node_t *cur_entry_node = cur_list->head;
     symtable_entry_t *entry;
     while (cur_entry_node) {
         entry = cur_entry_node->entry;
-        fprintf(stdout, "entry name: %s is defined at %s:%d\n", entry->name, entry->filename, entry->lineno);
-        switch(cur_entry_node->entry->attr_type) {
+        switch(entry->attr_type) {
             case ATTR_VAR: 
-                fprintf(stdout, "with type:\n");
-                print_ast(cur_entry_node->entry->variable.type);
+                fprintf(stdout, "entry name: %s is declared at %s:%d\n", entry->name, entry->filename, entry->lineno);
+                fprintf(stdout, "AST VAR DUMP:\n");
+                print_ast(entry->variable.type);
                 fprintf(stdout, "\n");
                 break;
-            case ATTR_FUNC: break;
+            case ATTR_FUNC:
+                fprintf(stdout, "entry name: %s is defined at %s:%d\n", entry->name, entry->filename, entry->lineno);
+                fprintf(stdout, "AST FUNC DUMP:\n");
+                print_ast(entry->function.type);
+                fprintf(stdout, "BLOCK:\n");
+                print_ast(entry->function.type->func.block);
+                fprintf(stdout, "SYMTABLE:\n");
+                entry;
+                print_symtable(entry->function.type->func.block->compound_statement.table);
+                fprintf(stdout, "\n");
+                break;
         }
         cur_entry_node = cur_entry_node->next;
     }
 }
-
-static int space = 2;
 
 void print_ast(astnode_t *astnode) {
     print_indent(space);
@@ -162,13 +177,10 @@ void print_ast(astnode_t *astnode) {
             }
             break;
         case AST_LL_LIST:
-            fprintf(stdout,"LIST:\n");
+            fprintf(stdout, "LIST:\n");
             astnode_t *cur = astnode->ll_list.head;
-            int count = 1;
             while(cur) {
-                space++;
-                print_ast(cur->ll_node.node);
-                space--;
+                space++; print_ast(cur->ll_node.node); space--;
                 cur = cur->ll_node.next;
             }
             break;
@@ -194,13 +206,8 @@ void print_ast(astnode_t *astnode) {
             break;
 
         case AST_DECLARATION:
-            fprintf(stdout, "DECLARATION\n");
-            space++;
-            print_indent(space); fprintf(stdout, "SPECIFIERS:\n");
-            space++; print_ast(astnode->declaration.declaration_spec_list); space--;
-            print_indent(space); fprintf(stdout, "DECLARATORS:\n");
+            fprintf(stdout, "DECLARATION:\n");
             space++; print_ast(astnode->declaration.init_declarator_list); space--;
-            space--;
             break;
 
         case AST_DECLARATION_SPEC:
@@ -234,15 +241,31 @@ void print_ast(astnode_t *astnode) {
             space++; print_ast(astnode->ptr.ptr_to); space--;
             break;
         case AST_ARRAY:
-            fprintf(stdout, "ARRAY WITH SIZE:\n");
+            fprintf(stdout, "ARRAY with size:\n");
             space++; print_ast(astnode->array.size); space--;
             print_indent(space); fprintf(stdout, "of\n");
             space++; print_ast(astnode->array.ptr_to); space--;
             break;
         case AST_FUNC:
-            fprintf(stdout, "FUNC WITH RET TYPE:\n");
+            fprintf(stdout, "FUNC with ret type:\n");
             space++; print_ast(astnode->func.ret_type); space--;
             break;
+
+        case AST_COMPOUND_STATEMENT:
+            fprintf(stdout, "COMPOUND STATEMENT:\n");
+            if (!astnode->compound_statement.block_items) {
+                fprintf(stdout, "empty block\n");
+                return;
+            }
+            space++;
+            astnode_t *block_item = astnode->compound_statement.block_items->ll_list.head;
+            while (block_item) {
+                print_ast(block_item->ll_node.node); space--;
+                block_item = block_item->ll_node.next;
+            }
+            space--;
+            break;
+
 
         default:
             break;

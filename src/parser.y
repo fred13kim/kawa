@@ -12,6 +12,8 @@
     extern int yylex(void);
     extern symtable_t *table;
     extern file_info_t file_info;
+
+    bool in_function_body = false;
 %}
 
 %code requires {
@@ -181,10 +183,25 @@ function_definition : declaration_specifiers declarator declaration_list compoun
                         yyerror("not supporting old c-style functions");
                         exit(-1);
                     }
+                    // change the outermost block here from block to function
+                    // scope
                     | declaration_specifiers declarator {
-
-                    }
-                    compound_statement  { 
+                        in_function_body = true;
+                        // skip the ident node
+                        astnode_t *t = $2->ll_list.head->ll_node.next;
+                        t = t->ll_node.node;
+                        table = symtable_push_table(table,t->func.table);
+                    } compound_statement {
+                        in_function_body = false;
+                        // skip the ident node
+                        $$ = $2->ll_list.head->ll_node.next;
+                        $$ = $$->ll_node.node;
+                        if ($$->type != AST_FUNC) {
+                            yyerror("not a proper function def");
+                            exit(-1);
+                        }
+                        $$->func.ret_type = $1; 
+                        $$->func.block = $4;
                     }
                     ;
 
@@ -688,21 +705,46 @@ labeled_statement   : IDENT ':' statement
                     | DEFAULT ':' statement
                     ;
 
-compound_statement  : '{' block_item_list '}'   {
-                        //$$ = alloc_astnode_compound_statement();
+// if this compound statement was called from a function def, we will be in function
+// scope, then we don't want to create another block scope
+
+// when we go in the compound_statement, we want to make sure all of the items
+// in the statement are in block/func scope. we also want to make sure to leave
+// block/func scope after the compound_statement
+
+// but we also want to create block scope if the compound statement was declared
+// inside of the function body
+
+compound_statement  : '{' {
+                        // if there is a block inside the body of a function,
+                        // want to change to block scope
+                        if (in_function_body) {
+                            in_function_body = false;
+                        } else {
+                            table = symtable_push(table,SCOPE_BLOCK);
+                        }
+                    } block_item_list '}'   {
+                        $$ = alloc_astnode_compound_statement($3,table);
+                        // let's make sure to leave block_scope now
+                        print_symtable(table);
+                        table = symtable_pop(table);
                     }
-                    | '{' '}'                   { $$ = NULL; }
+                    | '{' '}'                   {
+                        $$ = alloc_astnode_compound_statement(NULL, NULL);
+                        table = symtable_pop(table);
+                    }
                     ;
 
 block_item_list : block_item_list block_item    {
-                    // append
+                    $$ = append_astnode($1, $2);
                 }
                 | block_item                    {
-                    // create_new list
+                    $$ = alloc_astnode_ll_node($1);
+                    $$ = alloc_astnode_ll_list($$);
                 }
                 ;
 
-block_item  : declaration   { $$ = $1; }
+block_item  : declaration   { $$ = $1; symtable_start_declaration($1, table); }
             | statement     { $$ = $1; }
             ;
 
@@ -725,12 +767,6 @@ jump_statement  : GOTO IDENT
                 | BREAK ';'         
                 | RETURN expr_opt ';'
                 ;
-
-
-
-
-
-
 
 
 %%

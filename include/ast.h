@@ -1,10 +1,10 @@
 #ifndef AST_H_
 #define AST_H_
 
-#include "parser_defs.h"
 #include <stdbool.h>
+#include "parser_defs.h"
 
-
+typedef struct symtable_s symtable_t;
 typedef struct astnode_s astnode_t;
 
 astnode_t *alloc_astnode_unary(int op, astnode_t *expr);
@@ -41,6 +41,8 @@ astnode_t *alloc_astnode_declaration_spec(int spec, int spec_type);
 astnode_t *alloc_astnode_ptr(astnode_t *ptr_to);
 astnode_t *alloc_astnode_array(astnode_t *ptr_to, astnode_t *size);
 astnode_t *alloc_astnode_func(astnode_t *name, astnode_t *args);
+
+astnode_t *alloc_astnode_compound_statement(astnode_t *statements, symtable_t *table);
 
 
 enum nodetype{
@@ -153,10 +155,13 @@ struct astnode_func_s {
     astnode_t *name;
     astnode_t *args;
     astnode_t *ret_type;
+    astnode_t *block;
+    symtable_t *table;
 };
 
 struct astnode_compound_statement_s {
-
+    symtable_t *table;
+    astnode_t *block_items; // list of statements
 };
 
 struct astnode_s {
@@ -174,11 +179,13 @@ struct astnode_s {
         struct astnode_num_s        num;
         // struct astnode_charlit_s    charlit;
         struct astnode_string_s     str;
-        struct astnode_declaration_s    declaration;
-        struct astnode_declaration_spec_s declaration_spec;
+        struct astnode_declaration_s            declaration;
+        struct astnode_declaration_spec_s       declaration_spec;
         struct astnode_ptr_s        ptr;
         struct astnode_array_s      array;
         struct astnode_func_s       func;
+
+        struct astnode_compound_statement_s     compound_statement;
     };
 };
 

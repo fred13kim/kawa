@@ -7,6 +7,15 @@
 extern file_info_t file_info;
 extern void yyerror(char const *);
 
+
+void print_scopes(symtable_t *table) {
+    symtable_t *cur = table;
+    while(cur) {
+        printf("%d\n", cur->scope);
+        cur = cur->next;
+    }
+}
+
 symtable_entry_t *alloc_symtable_entry(char *name, int namespace, int type) {
     symtable_entry_t *entry = malloc(sizeof(symtable_entry_t));
     entry->name = name;
@@ -36,8 +45,6 @@ bool symtable_compare_entry(symtable_entry_t *entry1, symtable_entry_t *entry2) 
     }
     return false;
 }
-
-
 
 /*
  * in our current scope, let's check if the entry is in the list
@@ -209,7 +216,44 @@ void symtable_start_declaration(astnode_t *declaration, symtable_t *table) {
     }
 
 }
+
 void symtable_start_func_def(astnode_t *func_def, symtable_t *table) {
+    if (table->scope != SCOPE_GLOBAL) {
+        yyerror("function is not defined in global scope");
+        exit(-1);
+    }
+
+    symtable_entry_t *entry;
+    entry = alloc_symtable_entry(
+            func_def->func.name->ident.str.string_literal,
+            NAMESPACE_NULL,
+            ATTR_FUNC
+            );
+    entry->function.type = func_def;
+    entry->function.storage_class = STORAGE_EXTERN;
+    entry->function.inline_spec = false;
+    entry->function.defined = true;
+
+    if (!symtable_enter(table,entry)) {
+        yyerror("symbol entry already exists in the table");
+    }
+}
+
+// create a new symtable for the new scope and push onto the symtable list
+symtable_t *symtable_push(symtable_t *table, int scope) {
+    symtable_t *tmp = symtable_create(scope);
+    tmp->next = table;
+    return tmp;
+}
+
+// push an existing symtable to the symtable list
+symtable_t *symtable_push_table(symtable_t *table_cur, symtable_t *table_new) {
+    table_new->next = table_cur;
+    return table_new;
+}
+
+symtable_t *symtable_pop(symtable_t *table) {
+    return table->next;
 }
 
 
